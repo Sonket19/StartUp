@@ -73,59 +73,8 @@ const ScoreCircle = ({ score, isLoading }: { score: string; isLoading?: boolean 
     );
 };
 
-type Weightages = {
-    teamStrength: number;
-    marketOpportunity: number;
-    traction: number;
-    claimCredibility: number;
-    financialHealth: number;
-};
 
-export default function RiskAnalysis({ riskMetrics: initialRiskMetrics, conclusion, fullAnalysisData }: { riskMetrics: RiskMetrics, conclusion: Conclusion, fullAnalysisData: AnalysisData }) {
-  const [riskMetrics, setRiskMetrics] = useState(initialRiskMetrics);
-  const [isRecalculating, setIsRecalculating] = useState(false);
-  const [weights, setWeights] = useState<Weightages>({
-    teamStrength: 20,
-    marketOpportunity: 20,
-    traction: 20,
-    claimCredibility: 25,
-    financialHealth: 15,
-  });
-
-  const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
-
-  const handleWeightChange = (key: keyof Weightages, value: number[]) => {
-    setWeights(prev => ({...prev, [key]: value[0]}));
-  };
-
-  const handleRecalculate = async () => {
-    setIsRecalculating(true);
-    const input: RiskAssessmentSummaryInput = {
-      companyOverview: JSON.stringify(fullAnalysisData.company_overview),
-      marketAnalysis: JSON.stringify(fullAnalysisData.market_analysis),
-      businessModel: JSON.stringify(fullAnalysisData.business_model),
-      financials: JSON.stringify(fullAnalysisData.financials),
-      claimsAnalysis: JSON.stringify(fullAnalysisData.claims_analysis),
-      riskMetrics: JSON.stringify(riskMetrics),
-      conclusion: JSON.stringify(conclusion),
-      weights: {
-        teamStrength: weights.teamStrength / 100,
-        marketOpportunity: weights.marketOpportunity / 100,
-        traction: weights.traction / 100,
-        claimCredibility: weights.claimCredibility / 100,
-        financialHealth: weights.financialHealth / 100,
-      }
-    };
-
-    try {
-      const result = await getRiskAssessmentSummary(input);
-      setRiskMetrics(result);
-    } catch (error) {
-      console.error("Failed to recalculate score", error);
-    } finally {
-      setIsRecalculating(false);
-    }
-  };
+export default function RiskAnalysis({ riskMetrics, conclusion, fullAnalysisData, isRecalculating }: { riskMetrics: RiskMetrics, conclusion: Conclusion, fullAnalysisData: AnalysisData, isRecalculating: boolean }) {
 
   return (
     <div className="space-y-8">
@@ -135,46 +84,6 @@ export default function RiskAnalysis({ riskMetrics: initialRiskMetrics, conclusi
             <CardTitle className="font-headline text-2xl flex items-center gap-3"><ShieldCheck className="w-7 h-7 text-primary"/>Risk Metrics</CardTitle>
             <CardDescription>Generated composite score and narrative justification.</CardDescription>
           </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline"><SlidersHorizontal /> Generate Summary</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[625px]">
-              <DialogHeader>
-                <DialogTitle className="font-headline text-2xl flex items-center gap-3"><SlidersHorizontal className="w-7 h-7 text-primary"/>Customize Score Weightage</DialogTitle>
-                <DialogDescription>
-                  Adjust the importance of each factor to recalculate the safety score. The total must be 100%.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-6 py-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                  {(Object.keys(weights) as Array<keyof Weightages>).map(key => (
-                      <div key={key} className="grid gap-2">
-                          <div className="flex justify-between">
-                              <Label htmlFor={key} className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</Label>
-                              <span className="text-sm font-medium">{weights[key]}%</span>
-                          </div>
-                          <Slider id={key} value={[weights[key]]} onValueChange={(val) => handleWeightChange(key, val)} max={100} step={5} />
-                      </div>
-                  ))}
-                </div>
-                <div className="flex items-center justify-end">
-                    <div className="flex items-center gap-2">
-                        <Label>Total Weight:</Label>
-                        <Badge variant={totalWeight === 100 ? 'default' : 'destructive'}>{totalWeight}%</Badge>
-                    </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
-                    <ShieldCheck className="mr-2 h-4 w-4" />
-                    {isRecalculating ? 'Recalculating...' : 'Recalculate & Close'}
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row items-center gap-8">
           <div className="flex-shrink-0">

@@ -1,22 +1,140 @@
+
+'use client';
+
+import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { AnalysisData } from '@/lib/types';
+import type { AnalysisData, RiskMetrics, Conclusion } from '@/lib/types';
 import CompanyOverview from './company-overview';
 import MarketAnalysis from './market-analysis';
 import BusinessModel from './business-model';
 import Financials from './financials';
 import RiskAnalysis from './risk-analysis';
 import Chatbot from './chatbot';
-import { Briefcase, ShoppingCart, BarChart, Banknote, ShieldAlert, MessageCircle, SlidersHorizontal } from 'lucide-react';
+import { Briefcase, ShoppingCart, BarChart, Banknote, ShieldAlert, MessageCircle, SlidersHorizontal, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
+import { Badge } from './ui/badge';
+import { getRiskAssessmentSummary, RiskAssessmentSummaryInput } from '@/ai/flows/risk-assessment-summary';
 
 type AnalysisDashboardProps = {
   analysisData: AnalysisData;
 };
 
-export default function AnalysisDashboard({ analysisData }: AnalysisDashboardProps) {
+type Weightages = {
+    teamStrength: number;
+    marketOpportunity: number;
+    traction: number;
+    claimCredibility: number;
+    financialHealth: number;
+};
+
+export default function AnalysisDashboard({ analysisData: initialAnalysisData }: AnalysisDashboardProps) {
+  const [analysisData, setAnalysisData] = useState(initialAnalysisData);
+  const [isRecalculating, setIsRecalculating] = useState(false);
+  const [weights, setWeights] = useState<Weightages>({
+    teamStrength: 20,
+    marketOpportunity: 20,
+    traction: 20,
+    claimCredibility: 25,
+    financialHealth: 15,
+  });
+
+  const totalWeight = Object.values(weights).reduce((sum, w) => sum + w, 0);
+
+  const handleWeightChange = (key: keyof Weightages, value: number[]) => {
+    setWeights(prev => ({...prev, [key]: value[0]}));
+  };
+
+  const handleRecalculate = async () => {
+    setIsRecalculating(true);
+    const input: RiskAssessmentSummaryInput = {
+      companyOverview: JSON.stringify(analysisData.company_overview),
+      marketAnalysis: JSON.stringify(analysisData.market_analysis),
+      businessModel: JSON.stringify(analysisData.business_model),
+      financials: JSON.stringify(analysisData.financials),
+      claimsAnalysis: JSON.stringify(analysisData.claims_analysis),
+      riskMetrics: JSON.stringify(analysisData.risk_metrics),
+      conclusion: JSON.stringify(analysisData.conclusion),
+      weights: {
+        teamStrength: weights.teamStrength / 100,
+        marketOpportunity: weights.marketOpportunity / 100,
+        traction: weights.traction / 100,
+        claimCredibility: weights.claimCredibility / 100,
+        financialHealth: weights.financialHealth / 100,
+      }
+    };
+
+    try {
+      const result = await getRiskAssessmentSummary(input);
+      setAnalysisData(prev => ({
+        ...prev,
+        risk_metrics: {
+          ...prev.risk_metrics,
+          composite_investment_safety_score: result.composite_investment_safety_score,
+          narrative_justification: result.narrative_justification
+        }
+      }))
+    } catch (error) {
+      console.error("Failed to recalculate score", error);
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
+
   return (
     <div className="w-full animate-in fade-in-50 duration-500">
       <div className="flex justify-end mb-4">
+        <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline"><SlidersHorizontal /> Generate Summary</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[625px]">
+              <DialogHeader>
+                <DialogTitle className="font-headline text-2xl flex items-center gap-3"><SlidersHorizontal className="w-7 h-7 text-primary"/>Customize Score Weightage</DialogTitle>
+                <DialogDescription>
+                  Adjust the importance of each factor to recalculate the safety score. The total must be 100%.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                  {(Object.keys(weights) as Array<keyof Weightages>).map(key => (
+                      <div key={key} className="grid gap-2">
+                          <div className="flex justify-between">
+                              <Label htmlFor={key} className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</Label>
+                              <span className="text-sm font-medium">{weights[key]}%</span>
+                          </div>
+                          <Slider id={key} value={[weights[key]]} onValueChange={(val) => handleWeightChange(key, val)} max={100} step={5} />
+                      </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-end">
+                    <div className="flex items-center gap-2">
+                        <Label>Total Weight:</Label>
+                        <Badge variant={totalWeight === 100 ? 'default' : 'destructive'}>{totalWeight}%</Badge>
+                    </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
+                    {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldAlert className="mr-2 h-4 w-4" />}
+                    {isRecalculating ? 'Recalculating...' : 'Recalculate & Close'}
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
       </div>
       <Tabs defaultValue="overview">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 h-auto mb-6">
@@ -40,7 +158,7 @@ export default function AnalysisDashboard({ analysisData }: AnalysisDashboardPro
           <Financials data={analysisData.financials} claims={analysisData.claims_analysis}/>
         </TabsContent>
         <TabsContent value="risks">
-          <RiskAnalysis riskMetrics={analysisData.risk_metrics} conclusion={analysisData.conclusion} fullAnalysisData={analysisData} />
+          <RiskAnalysis riskMetrics={analysisData.risk_metrics} conclusion={analysisData.conclusion} fullAnalysisData={analysisData} isRecalculating={isRecalculating} />
         </TabsContent>
         <TabsContent value="chatbot">
           <Chatbot analysisData={analysisData} />
