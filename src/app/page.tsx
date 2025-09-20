@@ -29,7 +29,17 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
 
-const getRecommendationBadgeVariant = (recommendation: 'Proceed' | 'Monitor' | 'Decline') => {
+type Recommendation = 'Proceed' | 'Monitor' | 'Decline';
+
+const getRecommendation = (recommendationText: string): Recommendation => {
+  const lowerText = recommendationText.toLowerCase();
+  if (lowerText.includes('proceed')) return 'Proceed';
+  if (lowerText.includes('monitor')) return 'Monitor';
+  if (lowerText.includes('decline')) return 'Decline';
+  return 'Monitor'; // Default
+};
+
+const getRecommendationBadgeVariant = (recommendation: Recommendation) => {
   switch (recommendation) {
     case 'Proceed':
       return 'default';
@@ -70,48 +80,51 @@ export default function InvestorDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {startups.map(startup => (
-                  <TableRow key={startup.company_overview.id}>
-                    <TableCell>
-                      <Link href={`/startup/${startup.company_overview.id}`} className='hover:underline'>
-                        <div className="font-medium font-headline">{startup.company_overview.name}</div>
-                        <div className="text-sm text-muted-foreground">{startup.company_overview.sector}</div>
-                      </Link>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{startup.risk_metrics.composite_investment_safety_score}</TableCell>
-                    <TableCell className="hidden md:table-cell text-center">
-                      <Badge variant={getRecommendationBadgeVariant(startup.conclusion.recommendation_short)}>
-                        {startup.conclusion.recommendation_short}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/startup/${startup.company_overview.id}`}>View</Link>
-                        </Button>
-                        <AlertDialog>
-                           <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <Trash2 className="text-destructive"/>
-                              </Button>
-                           </AlertDialogTrigger>
-                           <AlertDialogContent>
-                               <AlertDialogHeader>
-                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                 <AlertDialogDescription>
-                                   This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startup.company_overview.name}</span>.
-                                 </AlertDialogDescription>
-                               </AlertDialogHeader>
-                               <AlertDialogFooter>
-                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                 <AlertDialogAction onClick={() => handleDelete(startup.company_overview.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                               </AlertDialogFooter>
-                           </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {startups.map(startup => {
+                  const recommendation = getRecommendation(startup.conclusion.investment_recommendation);
+                  return (
+                    <TableRow key={startup.company_overview.id}>
+                      <TableCell>
+                        <Link href={`/startup/${startup.company_overview.id}`} className='hover:underline'>
+                          <div className="font-medium font-headline">{startup.company_overview.name}</div>
+                          <div className="text-sm text-muted-foreground">{startup.company_overview.sector}</div>
+                        </Link>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{startup.risk_metrics.composite_investment_safety_score}</TableCell>
+                      <TableCell className="hidden md:table-cell text-center">
+                        <Badge variant={getRecommendationBadgeVariant(recommendation)}>
+                          {recommendation}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/startup/${startup.company_overview.id}`}>View</Link>
+                          </Button>
+                          <AlertDialog>
+                             <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <Trash2 className="text-destructive"/>
+                                </Button>
+                             </AlertDialogTrigger>
+                             <AlertDialogContent>
+                                 <AlertDialogHeader>
+                                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                   <AlertDialogDescription>
+                                     This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startup.company_overview.name}</span>.
+                                   </AlertDialogDescription>
+                                 </AlertDialogHeader>
+                                 <AlertDialogFooter>
+                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                   <AlertDialogAction onClick={() => handleDelete(startup.company_overview.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                 </AlertDialogFooter>
+                             </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </Card>
