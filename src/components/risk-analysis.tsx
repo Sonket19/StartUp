@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { RiskMetrics, Conclusion, AnalysisData } from '@/lib/types';
 import { getRiskAssessmentSummary, RiskAssessmentSummaryInput } from '@/ai/flows/risk-assessment-summary';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,6 +10,16 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 const ScoreCircle = ({ score, isLoading }: { score: string; isLoading?: boolean }) => {
     const numericScore = parseFloat(score);
@@ -119,8 +130,51 @@ export default function RiskAnalysis({ riskMetrics: initialRiskMetrics, conclusi
   return (
     <div className="space-y-8">
       <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl flex items-center gap-3"><ShieldCheck className="w-7 h-7 text-primary"/>Risk Metrics</CardTitle>
+        <CardHeader className="flex-row items-center justify-between">
+          <div className="space-y-1.5">
+            <CardTitle className="font-headline text-2xl flex items-center gap-3"><ShieldCheck className="w-7 h-7 text-primary"/>Risk Metrics</CardTitle>
+            <CardDescription>Generated composite score and narrative justification.</CardDescription>
+          </div>
+          <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline"><SlidersHorizontal /> Customize Score</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[625px]">
+                <DialogHeader>
+                  <DialogTitle className="font-headline text-2xl flex items-center gap-3"><SlidersHorizontal className="w-7 h-7 text-primary"/>Customize Score Weightage</DialogTitle>
+                  <DialogDescription>
+                    Adjust the importance of each factor to recalculate the safety score. The total must be 100%.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    {(Object.keys(weights) as Array<keyof Weightages>).map(key => (
+                        <div key={key} className="grid gap-2">
+                            <div className="flex justify-between">
+                                <Label htmlFor={key} className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</Label>
+                                <span className="text-sm font-medium">{weights[key]}%</span>
+                            </div>
+                            <Slider id={key} value={[weights[key]]} onValueChange={(val) => handleWeightChange(key, val)} max={100} step={5} />
+                        </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-end">
+                      <div className="flex items-center gap-2">
+                          <Label>Total Weight:</Label>
+                          <Badge variant={totalWeight === 100 ? 'default' : 'destructive'}>{totalWeight}%</Badge>
+                      </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
+                      <ShieldCheck className="mr-2 h-4 w-4" />
+                      {isRecalculating ? 'Recalculating...' : 'Recalculate & Close'}
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row items-center gap-8">
           <div className="flex-shrink-0">
@@ -132,37 +186,7 @@ export default function RiskAnalysis({ riskMetrics: initialRiskMetrics, conclusi
           </div>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl flex items-center gap-3"><SlidersHorizontal className="w-7 h-7 text-primary"/>Customize Score Weightage</CardTitle>
-          <CardDescription>Adjust the importance of each factor to recalculate the safety score. Current total must be 100%.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-              {(Object.keys(weights) as Array<keyof Weightages>).map(key => (
-                  <div key={key} className="grid gap-2">
-                      <div className="flex justify-between">
-                          <Label htmlFor={key} className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</Label>
-                          <span className="text-sm font-medium">{weights[key]}%</span>
-                      </div>
-                      <Slider id={key} value={[weights[key]]} onValueChange={(val) => handleWeightChange(key, val)} max={100} step={5} />
-                  </div>
-              ))}
-            </div>
-            <div className="flex items-center justify-between">
-                <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  {isRecalculating ? 'Recalculating...' : 'Recalculate Score'}
-                </Button>
-                <div className="flex items-center gap-2">
-                    <Label>Total Weight:</Label>
-                    <Badge variant={totalWeight === 100 ? 'default' : 'destructive'}>{totalWeight}%</Badge>
-                </div>
-            </div>
-        </CardContent>
-      </Card>
-
+      
       <Card>
         <CardHeader>
           <CardTitle className="font-headline text-2xl flex items-center gap-3"><AlertTriangle className="w-7 h-7 text-destructive"/>Key Risks</CardTitle>
@@ -195,3 +219,4 @@ export default function RiskAnalysis({ riskMetrics: initialRiskMetrics, conclusi
     </div>
   );
 }
+
