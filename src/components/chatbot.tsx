@@ -17,7 +17,7 @@ type Message = {
 export default function Chatbot({ analysisData }: { analysisData: AnalysisData }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const getInitialBotMessage = async () => {
@@ -38,6 +38,7 @@ export default function Chatbot({ analysisData }: { analysisData: AnalysisData }
 
   useEffect(() => {
     getInitialBotMessage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [analysisData]);
 
   useEffect(() => {
@@ -53,7 +54,8 @@ export default function Chatbot({ analysisData }: { analysisData: AnalysisData }
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessages: Message[] = [...messages, { role: 'user', content: input }];
+    const userMessage: Message = { role: 'user', content: input };
+    const newMessages: Message[] = [...messages, userMessage];
     setMessages(newMessages);
     setInput('');
     setIsLoading(true);
@@ -63,9 +65,9 @@ export default function Chatbot({ analysisData }: { analysisData: AnalysisData }
         analysisData: JSON.stringify(analysisData),
         history: newMessages,
       });
-      setMessages([...newMessages, { role: 'model', content: result.message }]);
+      setMessages((prevMessages) => [...prevMessages, { role: 'model', content: result.message }]);
     } catch (e) {
-      setMessages([...newMessages, { role: 'model', content: 'Sorry, something went wrong. Please try again.' }]);
+      setMessages((prevMessages) => [...prevMessages, { role: 'model', content: 'Sorry, something went wrong. Please try again.' }]);
     } finally {
       setIsLoading(false);
     }
