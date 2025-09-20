@@ -71,9 +71,6 @@ export default function InvestorDashboard() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" asChild>
-                            <Link href={`/startup/${startup.company_overview.id}`}>View</Link>
-                          </Button>
                           <Button variant="outline" size="sm">
                             <Download />
                             Word
