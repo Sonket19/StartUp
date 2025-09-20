@@ -29,11 +29,17 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
 
-const getRecommendationBadgeVariant = (recommendation: string) => {
-  if (recommendation.toLowerCase().includes('proceed')) {
-    return 'default';
+const getRecommendationBadgeVariant = (recommendation: 'Proceed' | 'Monitor' | 'Decline') => {
+  switch (recommendation) {
+    case 'Proceed':
+      return 'default';
+    case 'Monitor':
+      return 'secondary';
+    case 'Decline':
+      return 'destructive';
+    default:
+      return 'outline';
   }
-  return 'secondary';
 };
 
 export default function InvestorDashboard() {
@@ -83,8 +89,8 @@ export default function InvestorDashboard() {
                     </TableCell>
                     <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{startup.risk_metrics.composite_investment_safety_score}</TableCell>
                     <TableCell className="hidden md:table-cell text-center">
-                      <Badge variant={getRecommendationBadgeVariant(startup.conclusion.investment_recommendation)}>
-                        {startup.conclusion.investment_recommendation}
+                      <Badge variant={getRecommendationBadgeVariant(startup.conclusion.recommendation_short)}>
+                        {startup.conclusion.recommendation_short}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">

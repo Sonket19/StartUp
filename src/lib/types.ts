@@ -100,6 +100,7 @@ export type Conclusion = {
   summary_of_opportunity: string;
   key_risks: KeyRisk[];
   investment_recommendation: string;
+  recommendation_short: 'Proceed' | 'Monitor' | 'Decline';
 };
 
 export type AnalysisData = {

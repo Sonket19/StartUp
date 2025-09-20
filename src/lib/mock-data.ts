@@ -122,7 +122,8 @@ const baseAnalysisData: Omit<AnalysisData, 'company_overview'> = {
         "mitigation": "While CAC and LTV are unknown, the initial $98k/year contract is a positive signal for high LTV. Diligence should focus on understanding the sales process and costs associated with acquiring the initial customers and pilots."
       }
     ],
-    "investment_recommendation": "Proceed with Due Diligence. The combination of a strong team, a validated problem in a large market, and impressive early traction makes Sia an attractive seed-stage investment. The next steps should focus on validating the technical defensibility of their AI agent, speaking with pilot customers to confirm the '10x' value proposition and likelihood of conversion, and deep-diving into the assumptions behind their sales pipeline and financial model."
+    "investment_recommendation": "Proceed with Due Diligence. The combination of a strong team, a validated problem in a large market, and impressive early traction makes Sia an attractive seed-stage investment. The next steps should focus on validating the technical defensibility of their AI agent, speaking with pilot customers to confirm the '10x' value proposition and likelihood of conversion, and deep-diving into the assumptions behind their sales pipeline and financial model.",
+    "recommendation_short": "Proceed"
   }
 };
 
@@ -178,6 +179,10 @@ export const allAnalysisData: AnalysisData[] = [
       composite_investment_safety_score: "75.5%",
       narrative_justification: "Strong team with deep medical expertise and a clear, validated problem in the healthcare space. Regulatory hurdles are a primary risk, but the market potential is enormous.",
     },
+    conclusion: {
+      ...baseAnalysisData.conclusion,
+      recommendation_short: "Proceed",
+    }
   },
   {
     ...baseAnalysisData,
@@ -199,5 +204,9 @@ export const allAnalysisData: AnalysisData[] = [
       composite_investment_safety_score: "61.0%",
       narrative_justification: "High-risk, high-reward investment. The founder has strong technical skills, but the DeFi space is volatile and subject to regulatory uncertainty. Significant competition from established and emerging players.",
     },
+    conclusion: {
+      ...baseAnalysisData.conclusion,
+      recommendation_short: "Monitor",
+    }
   }
 ];
