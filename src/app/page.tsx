@@ -27,30 +27,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Badge } from '@/components/ui/badge';
-
-type Recommendation = 'Proceed' | 'Monitor' | 'Decline';
-
-const getRecommendation = (recommendationText: string): Recommendation => {
-  const lowerText = recommendationText.toLowerCase();
-  if (lowerText.includes('proceed')) return 'Proceed';
-  if (lowerText.includes('monitor')) return 'Monitor';
-  if (lowerText.includes('decline')) return 'Decline';
-  return 'Monitor'; // Default
-};
-
-const getRecommendationBadgeVariant = (recommendation: Recommendation) => {
-  switch (recommendation) {
-    case 'Proceed':
-      return 'default';
-    case 'Monitor':
-      return 'secondary';
-    case 'Decline':
-      return 'destructive';
-    default:
-      return 'outline';
-  }
-};
 
 export default function InvestorDashboard() {
   const [startups, setStartups] = useState<AnalysisData[]>(allAnalysisData);
@@ -75,13 +51,12 @@ export default function InvestorDashboard() {
                 <TableRow>
                   <TableHead>Startup</TableHead>
                   <TableHead className="hidden sm:table-cell text-center">Safety Score</TableHead>
-                  <TableHead className="hidden md:table-cell text-center">Recommendation</TableHead>
+                  <TableHead className="hidden md:table-cell">Recommendation</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {startups.map(startup => {
-                  const recommendation = getRecommendation(startup.conclusion.investment_recommendation);
                   return (
                     <TableRow key={startup.company_overview.id}>
                       <TableCell>
@@ -91,10 +66,8 @@ export default function InvestorDashboard() {
                         </Link>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{startup.risk_metrics.composite_investment_safety_score}</TableCell>
-                      <TableCell className="hidden md:table-cell text-center">
-                        <Badge variant={getRecommendationBadgeVariant(recommendation)}>
-                          {recommendation}
-                        </Badge>
+                      <TableCell className="hidden md:table-cell">
+                        <p className="text-sm text-muted-foreground">{startup.conclusion.investment_recommendation}</p>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
