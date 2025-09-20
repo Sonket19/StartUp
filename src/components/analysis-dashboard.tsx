@@ -34,7 +34,7 @@ export default function AnalysisDashboard({ analysisData }: AnalysisDashboardPro
         <Financials data={analysisData.financials} claims={analysisData.claims_analysis}/>
       </TabsContent>
       <TabsContent value="risks">
-        <RiskAnalysis riskMetrics={analysisData.risk_metrics} conclusion={analysisData.conclusion} />
+        <RiskAnalysis riskMetrics={analysisData.risk_metrics} conclusion={analysisData.conclusion} fullAnalysisData={analysisData} />
       </TabsContent>
     </Tabs>
   );
