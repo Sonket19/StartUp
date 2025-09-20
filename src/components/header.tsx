@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { BrainCircuit } from 'lucide-react';
+import { BrainCircuit, Upload } from 'lucide-react';
+import { Button } from './ui/button';
 
 export default function Header() {
   return (
@@ -12,6 +13,12 @@ export default function Header() {
           <h1 className="text-xl md:text-2xl font-headline font-bold text-foreground">
             Startup Insights AI
           </h1>
+        </Link>
+        <Link href="/upload">
+          <Button variant="outline">
+            <Upload className="mr-2 h-4 w-4" />
+            Founder Upload
+          </Button>
         </Link>
       </div>
     </header>
