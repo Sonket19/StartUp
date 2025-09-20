@@ -97,7 +97,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       <div className="flex justify-end mb-4">
         <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline"><SlidersHorizontal /> Generate Summary</Button>
+              <Button><SlidersHorizontal /> Generate Summary</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[625px]">
               <DialogHeader>
