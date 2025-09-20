@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
 import Header from '@/components/header';
@@ -48,11 +48,11 @@ export default function InvestorDashboard() {
           <Card>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Startup</TableHead>
-                  <TableHead className="hidden sm:table-cell text-center">Safety Score</TableHead>
-                  <TableHead className="hidden md:table-cell">Recommendation</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="bg-secondary hover:bg-secondary">
+                  <TableHead className="font-semibold">Startup</TableHead>
+                  <TableHead className="hidden sm:table-cell text-center font-semibold">Safety Score</TableHead>
+                  <TableHead className="hidden md:table-cell font-semibold">Recommendation</TableHead>
+                  <TableHead className="text-right font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -103,10 +103,8 @@ export default function InvestorDashboard() {
           </Card>
         ) : (
             <div className="text-center py-20 border-2 border-dashed rounded-lg">
-              <CardContent className='pt-6'>
                 <h2 className="text-2xl font-headline font-semibold">No Startups Analyzed</h2>
                 <p className="text-muted-foreground mt-2">You haven&apos;t analyzed any startups yet.</p>
-              </CardContent>
             </div>
         )}
       </main>
