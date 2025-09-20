@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Download } from 'lucide-react';
 import Header from '@/components/header';
 import {
   AlertDialog,
@@ -73,6 +73,10 @@ export default function InvestorDashboard() {
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="sm" asChild>
                             <Link href={`/startup/${startup.company_overview.id}`}>View</Link>
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Download />
+                            Word
                           </Button>
                           <AlertDialog>
                              <AlertDialogTrigger asChild>
