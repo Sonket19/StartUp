@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import type { AnalysisData } from '@/lib/types';
 import { allAnalysisData } from '@/lib/mock-data';
-import FileUpload from '@/components/file-upload';
 import AnalysisDashboard from '@/components/analysis-dashboard';
 import { Loader2 } from 'lucide-react';
 import Header from '@/components/header';
@@ -22,7 +21,10 @@ export default function StartupPage({ params }: { params: { startupId: string } 
         setIsLoading(false);
       }, 500);
     } else {
-      notFound();
+      // If no data, and we're not creating a new one, show not found.
+      if (params.startupId !== 'new') {
+        notFound();
+      }
     }
   }, [params.startupId]);
 

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Download } from 'lucide-react';
+import { Trash2, Download, Upload } from 'lucide-react';
 import Header from '@/components/header';
 import {
   AlertDialog,
@@ -27,21 +27,51 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription
+} from '@/components/ui/dialog';
+import FileUpload from '@/components/file-upload';
+import { useRouter } from 'next/navigation';
 
 export default function InvestorDashboard() {
   const [startups, setStartups] = useState<AnalysisData[]>(allAnalysisData);
+  const router = useRouter();
   
   const handleDelete = (startupId: string) => {
     setStartups(currentStartups => currentStartups.filter(s => s.company_overview.id !== startupId));
   };
 
+  const handleGenerate = () => {
+    // This would ideally be a real navigation after a real analysis is created.
+    // For now, it just navigates to the first mock startup.
+    router.push('/startup/sia');
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
-        <div className="mb-8">
-            <h1 className="text-4xl font-headline font-bold">Investor Dashboard</h1>
-            <p className="text-muted-foreground">Your portfolio of analyzed startups.</p>
+        <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-headline font-bold">Investor Dashboard</h1>
+              <p className="text-muted-foreground">Your portfolio of analyzed startups.</p>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Document
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <FileUpload onGenerate={handleGenerate} />
+              </DialogContent>
+            </Dialog>
         </div>
         
         {startups.length > 0 ? (
@@ -106,6 +136,17 @@ export default function InvestorDashboard() {
             <div className="text-center py-20 border-2 border-dashed rounded-lg">
                 <h2 className="text-2xl font-headline font-semibold">No Startups Analyzed</h2>
                 <p className="text-muted-foreground mt-2">You haven&apos;t analyzed any startups yet.</p>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button className="mt-4">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Your First Document
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-xl">
+                    <FileUpload onGenerate={handleGenerate} />
+                  </DialogContent>
+                </Dialog>
             </div>
         )}
       </main>
