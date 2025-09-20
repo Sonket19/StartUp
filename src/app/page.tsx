@@ -4,9 +4,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { allAnalysisData } from '@/lib/mock-data';
 import type { AnalysisData } from '@/lib/types';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, ArrowRight, LineChart, Briefcase, Building } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import Header from '@/components/header';
 import {
   AlertDialog,
@@ -54,39 +62,40 @@ export default function InvestorDashboard() {
         </div>
         
         {startups.length > 0 ? (
-          <div className="space-y-4">
-            {startups.map(startup => (
-              <Link key={startup.company_overview.id} href={`/startup/${startup.company_overview.id}`} passHref>
-                <Card className="hover:shadow-md hover:border-primary/50 transition-all">
-                  <CardContent className="p-4 grid grid-cols-2 md:grid-cols-4 items-center gap-4">
-                    <div className="col-span-1 md:col-span-2 flex items-center gap-6">
-                      <div className='hidden sm:block'>
-                        <Building className="w-10 h-10 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <h2 className="font-headline text-xl font-semibold">{startup.company_overview.name}</h2>
-                        <p className="text-sm text-muted-foreground">{startup.company_overview.sector}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-start sm:items-end md:items-start md:flex-row col-span-2 md:col-span-2 md:justify-end md:items-center gap-4">
-                      <div className="flex items-center gap-2 text-sm w-full md:w-auto justify-end md:justify-start">
-                          <LineChart className="w-4 h-4 text-primary" />
-                          <span className="font-semibold hidden sm:inline">Safety Score:</span>
-                          <span className="font-bold">{startup.risk_metrics.composite_investment_safety_score}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm w-full md:w-auto justify-end md:justify-start">
-                          <Briefcase className="w-4 h-4 text-primary" />
-                          <span className="font-semibold hidden sm:inline">Recommendation:</span>
-                          <Badge variant={getRecommendationBadgeVariant(startup.conclusion.investment_recommendation)}>{startup.conclusion.investment_recommendation}</Badge>
-                      </div>
-                      <div className='flex items-center gap-2 w-full md:w-auto justify-end md:justify-start'>
-                        <Button variant="outline" size="sm">
-                          View Analysis <ArrowRight className="ml-2 hidden sm:inline" />
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Startup</TableHead>
+                  <TableHead className="hidden sm:table-cell text-center">Safety Score</TableHead>
+                  <TableHead className="hidden md:table-cell text-center">Recommendation</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {startups.map(startup => (
+                  <TableRow key={startup.company_overview.id}>
+                    <TableCell>
+                      <Link href={`/startup/${startup.company_overview.id}`} className='hover:underline'>
+                        <div className="font-medium font-headline">{startup.company_overview.name}</div>
+                        <div className="text-sm text-muted-foreground">{startup.company_overview.sector}</div>
+                      </Link>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{startup.risk_metrics.composite_investment_safety_score}</TableCell>
+                    <TableCell className="hidden md:table-cell text-center">
+                      <Badge variant={getRecommendationBadgeVariant(startup.conclusion.investment_recommendation)}>
+                        {startup.conclusion.investment_recommendation}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/startup/${startup.company_overview.id}`}>View</Link>
                         </Button>
                         <AlertDialog onOpenChange={(open) => !open && setStartupToDelete(null)}>
                            <AlertDialogTrigger asChild>
-                              <Button variant="destructive" size="icon" onClick={(e) => openDeleteDialog(e, startup)}>
-                                <Trash2 />
+                              <Button variant="ghost" size="icon" onClick={(e) => openDeleteDialog(e, startup)}>
+                                <Trash2 className="text-destructive"/>
                               </Button>
                            </AlertDialogTrigger>
                            <AlertDialogContent>
@@ -98,21 +107,23 @@ export default function InvestorDashboard() {
                                </AlertDialogHeader>
                                <AlertDialogFooter>
                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                 <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                                 <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                                </AlertDialogFooter>
                            </AlertDialogContent>
                         </AlertDialog>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         ) : (
             <div className="text-center py-20 border-2 border-dashed rounded-lg">
+              <CardContent className='pt-6'>
                 <h2 className="text-2xl font-headline font-semibold">No Startups Analyzed</h2>
                 <p className="text-muted-foreground mt-2">You haven&apos;t analyzed any startups yet.</p>
+              </CardContent>
             </div>
         )}
       </main>
