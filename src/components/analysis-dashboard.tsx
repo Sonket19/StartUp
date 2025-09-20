@@ -10,7 +10,7 @@ import BusinessModel from './business-model';
 import Financials from './financials';
 import RiskAnalysis from './risk-analysis';
 import Chatbot from './chatbot';
-import { Briefcase, ShoppingCart, BarChart, Banknote, ShieldAlert, MessageCircle, SlidersHorizontal, Loader2 } from 'lucide-react';
+import { Briefcase, ShoppingCart, BarChart, Banknote, ShieldAlert, MessageCircle, SlidersHorizontal, Loader2, FileArchive, FileText, Video, Mic, Type } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   Dialog,
@@ -94,7 +94,50 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
 
   return (
     <div className="w-full animate-in fade-in-50 duration-500">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-end gap-4 mb-4">
+        <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline"><FileArchive /> Uploaded Data</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[525px]">
+                <DialogHeader>
+                  <DialogTitle className="font-headline text-2xl flex items-center gap-3"><FileArchive className="w-7 h-7 text-primary"/>Uploaded Data Sources</DialogTitle>
+                  <DialogDescription>
+                    Download the original source files used for this analysis.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <FileText className="w-6 h-6 text-muted-foreground" />
+                            <span className="font-medium">pitch_deck_v3.pdf</span>
+                        </div>
+                        <Button size="sm">Download</Button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <Video className="w-6 h-6 text-muted-foreground" />
+                            <span className="font-medium">founder_interview.mp4</span>
+                        </div>
+                        <Button size="sm">Download</Button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <Mic className="w-6 h-6 text-muted-foreground" />
+                            <span className="font-medium">demo_walkthrough.mp3</span>
+                        </div>
+                        <Button size="sm">Download</Button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <Type className="w-6 h-6 text-muted-foreground" />
+                            <span className="font-medium">additional_notes.txt</span>
+                        </div>
+                        <Button size="sm">Download</Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
         <Dialog>
             <DialogTrigger asChild>
               <Button><SlidersHorizontal /> Generate Summary</Button>
