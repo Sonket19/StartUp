@@ -1,7 +1,7 @@
 import type { CompanyOverview as CompanyOverviewType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, Building, Cpu, Users, GraduationCap, Building2 } from 'lucide-react';
+import { Briefcase, Building, Cpu, Users, GraduationCap, Building2, User } from 'lucide-react';
 
 const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('');
@@ -31,8 +31,9 @@ export default function CompanyOverview({ data }: { data: CompanyOverviewType })
             <Card key={founder.name} className="flex flex-col">
               <CardHeader className="flex flex-row items-center gap-4">
                 <Avatar className="h-16 w-16">
-                  <AvatarImage src={`https://picsum.photos/seed/${index + 1}/150/150`} data-ai-hint="person" />
-                  <AvatarFallback className="text-xl">{getInitials(founder.name)}</AvatarFallback>
+                  <AvatarFallback className="text-xl bg-secondary">
+                    <User className="w-8 h-8 text-muted-foreground" />
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <CardTitle className="font-headline text-xl">{founder.name}</CardTitle>
