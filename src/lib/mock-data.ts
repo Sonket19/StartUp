@@ -1,31 +1,6 @@
 import type { AnalysisData } from './types';
 
-export const analysisData: AnalysisData = {
-  "company_overview": {
-    "name": "Sia",
-    "sector": "AI-powered Data Analytics",
-    "founders": [
-      {
-        "name": "Divya Krishna R",
-        "education": "Not specified in the provided data.",
-        "professional_background": "Former Lead Data Scientist at Bosch. Co-developed multiple data-driven applications and holds 10 combined patents, demonstrating strong technical and domain expertise.",
-        "previous_ventures": "Not specified."
-      },
-      {
-        "name": "Sumalata Kamat",
-        "education": "Not specified in the provided data.",
-        "professional_background": "Former System Engineer at Bosch, where she collaborated with Divya on developing data solutions. The team has worked together for over 8 years.",
-        "previous_ventures": "Not specified."
-      },
-      {
-        "name": "Karthik C.",
-        "education": "M.E. from Frankfurt University.",
-        "professional_background": "Experience at IBM, providing exposure to large enterprise environments.",
-        "previous_ventures": "Founder of a prior sports-tech startup, Avid Athletes, indicating previous entrepreneurial experience."
-      }
-    ],
-    "technology": "Sia is a proprietary 'Agentic AI' platform designed for data analytics. It functions through a natural language chat interface, allowing non-technical users to query complex, fragmented data sources. The core technology automates data analysis, visualization, and reporting. The specific technology stack (e.g., programming languages, frameworks, underlying LLMs) is not detailed in the provided information."
-  },
+const baseAnalysisData: Omit<AnalysisData, 'company_overview'> = {
   "market_analysis": {
     "industry_size_and_growth": {
       "total_addressable_market": {
@@ -129,7 +104,7 @@ export const analysisData: AnalysisData = {
   },
   "risk_metrics": {
     "composite_investment_safety_score": "68.2%",
-    "narrative_justification": "The composite score represents the likelihood of a 'safe' investment, where safety is defined as the potential for positive returns against downside risk. The score is derived from a weighted average of key factors: Team Strength (20%), Market Opportunity (20%), Traction (20%), Claim Credibility (25%), and Financial Health (15%). Sia scores very high on Team (cohesive, experienced) and Market (large, high-growth). Traction is strong for its stage but still nascent. The financial projections, while ambitious, have a moderately likely probability (66.3%) of being met in the first year, lending credibility. The primary risks are execution-based: a highly competitive landscape with tech giants, an unproven sales cycle at scale, and key unknown metrics like CAC and churn. The 68.2% score indicates a promising but early-stage opportunity with manageable risks that require further diligence, rather than a low-risk venture."
+    "narrative_justification": "The composite score represents the likelihood of a 'safe' investment, where safety is defined as the potential for positive returns against downside risk. The score is derived from a weighted average of key factors: Team Strength (20%), Market Opportunity (20%), Traction (20%), Claim Credibility (25%), and Financial Health (15%). Sia scores very high on Team (cohesive, experienced) and Market (large, high-growth). Traction is strong for its stage but still nascent. The financial projections, while ambitious, have a moderately likely probability (66.3%) of being met in the first year, lending credibility. The primary risks are execution-based: a highly competitive landscape with a-proven sales cycle at scale, and key unknown metrics like CAC and churn. The 68.2% score indicates a promising but early-stage opportunity with manageable risks that require further diligence, rather than a low-risk venture."
   },
   "conclusion": {
     "summary_of_opportunity": "Sia presents a compelling investment opportunity by targeting a clear and expensive problem in a massive, high-growth market. The founding team is a significant asset, with deep domain expertise and a long history of working together. Early traction with blue-chip companies like Bosch and Mercedes-Benz validates their value proposition. The agentic AI approach is timely and positions them at the forefront of the next wave of business intelligence.",
@@ -150,3 +125,79 @@ export const analysisData: AnalysisData = {
     "investment_recommendation": "Proceed with Due Diligence. The combination of a strong team, a validated problem in a large market, and impressive early traction makes Sia an attractive seed-stage investment. The next steps should focus on validating the technical defensibility of their AI agent, speaking with pilot customers to confirm the '10x' value proposition and likelihood of conversion, and deep-diving into the assumptions behind their sales pipeline and financial model."
   }
 };
+
+export const analysisData: AnalysisData = {
+  ...baseAnalysisData,
+  "company_overview": {
+    "id": "sia",
+    "name": "Sia",
+    "sector": "AI-powered Data Analytics",
+    "founders": [
+      {
+        "name": "Divya Krishna R",
+        "education": "Not specified in the provided data.",
+        "professional_background": "Former Lead Data Scientist at Bosch. Co-developed multiple data-driven applications and holds 10 combined patents, demonstrating strong technical and domain expertise.",
+        "previous_ventures": "Not specified."
+      },
+      {
+        "name": "Sumalata Kamat",
+        "education": "Not specified in the provided data.",
+        "professional_background": "Former System Engineer at Bosch, where she collaborated with Divya on developing data solutions. The team has worked together for over 8 years.",
+        "previous_ventures": "Not specified."
+      },
+      {
+        "name": "Karthik C.",
+        "education": "M.E. from Frankfurt University.",
+        "professional_background": "Experience at IBM, providing exposure to large enterprise environments.",
+        "previous_ventures": "Founder of a prior sports-tech startup, Avid Athletes, indicating previous entrepreneurial experience."
+      }
+    ],
+    "technology": "Sia is a proprietary 'Agentic AI' platform designed for data analytics. It functions through a natural language chat interface, allowing non-technical users to query complex, fragmented data sources. The core technology automates data analysis, visualization, and reporting. The specific technology stack (e.g., programming languages, frameworks, underlying LLMs) is not detailed in the provided information."
+  }
+};
+
+export const allAnalysisData: AnalysisData[] = [
+  analysisData,
+  {
+    ...baseAnalysisData,
+    "company_overview": {
+      "id": "health-innovators",
+      "name": "Health Innovators",
+      "sector": "MedTech",
+      "founders": [
+        {
+          "name": "Dr. Ananya Sharma",
+          "education": "MD, PhD from AIIMS",
+          "professional_background": "15 years as a practicing surgeon, deep understanding of clinical workflows.",
+          "previous_ventures": "Developed a patented surgical tool during residency."
+        }
+      ],
+      "technology": "AI-powered diagnostic imaging platform that assists radiologists in detecting early-stage diseases with higher accuracy."
+    },
+    risk_metrics: {
+      composite_investment_safety_score: "75.5%",
+      narrative_justification: "Strong team with deep medical expertise and a clear, validated problem in the healthcare space. Regulatory hurdles are a primary risk, but the market potential is enormous.",
+    },
+  },
+  {
+    ...baseAnalysisData,
+    "company_overview": {
+      "id": "fintech-future",
+      "name": "Fintech Future",
+      "sector": "Financial Technology",
+      "founders": [
+        {
+          "name": "Rohan Mehta",
+          "education": "B.Tech in Computer Science from IIT Bombay",
+          "professional_background": "Ex-quantitative analyst at Goldman Sachs. Experience in building high-frequency trading algorithms.",
+          "previous_ventures": "None."
+        }
+      ],
+      "technology": "A platform for decentralized finance (DeFi) lending, using smart contracts to automate loan origination and servicing."
+    },
+    risk_metrics: {
+      composite_investment_safety_score: "61.0%",
+      narrative_justification: "High-risk, high-reward investment. The founder has strong technical skills, but the DeFi space is volatile and subject to regulatory uncertainty. Significant competition from established and emerging players.",
+    },
+  }
+];

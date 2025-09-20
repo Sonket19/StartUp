@@ -6,6 +6,7 @@ export type Founder = {
 };
 
 export type CompanyOverview = {
+  id: string;
   name: string;
   sector: string;
   founders: Founder[];
