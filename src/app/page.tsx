@@ -21,6 +21,13 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from '@/components/ui/badge';
 
+const getRecommendationBadgeVariant = (recommendation: string) => {
+  if (recommendation.toLowerCase().includes('proceed')) {
+    return 'default';
+  }
+  return 'secondary';
+};
+
 export default function InvestorDashboard() {
   const [startups, setStartups] = useState<AnalysisData[]>(allAnalysisData);
   const [startupToDelete, setStartupToDelete] = useState<AnalysisData | null>(null);
@@ -51,8 +58,8 @@ export default function InvestorDashboard() {
             {startups.map(startup => (
               <Link key={startup.company_overview.id} href={`/startup/${startup.company_overview.id}`} passHref>
                 <Card className="hover:shadow-md hover:border-primary/50 transition-all">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-6">
+                  <CardContent className="p-4 grid grid-cols-2 md:grid-cols-4 items-center gap-4">
+                    <div className="col-span-1 md:col-span-2 flex items-center gap-6">
                       <div className='hidden sm:block'>
                         <Building className="w-10 h-10 text-muted-foreground" />
                       </div>
@@ -61,20 +68,20 @@ export default function InvestorDashboard() {
                         <p className="text-sm text-muted-foreground">{startup.company_overview.sector}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 md:gap-8">
-                      <div className="hidden md:flex items-center gap-2 text-sm">
+                    <div className="flex flex-col items-start sm:items-end md:items-start md:flex-row col-span-2 md:col-span-2 md:justify-end md:items-center gap-4">
+                      <div className="flex items-center gap-2 text-sm w-full md:w-auto justify-end md:justify-start">
                           <LineChart className="w-4 h-4 text-primary" />
-                          <span className="font-semibold">Safety Score:</span>
+                          <span className="font-semibold hidden sm:inline">Safety Score:</span>
                           <span className="font-bold">{startup.risk_metrics.composite_investment_safety_score}</span>
                       </div>
-                      <div className="hidden lg:flex items-center gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-sm w-full md:w-auto justify-end md:justify-start">
                           <Briefcase className="w-4 h-4 text-primary" />
-                          <span className="font-semibold">Recommendation:</span>
-                          <Badge variant="outline">{startup.conclusion.investment_recommendation}</Badge>
+                          <span className="font-semibold hidden sm:inline">Recommendation:</span>
+                          <Badge variant={getRecommendationBadgeVariant(startup.conclusion.investment_recommendation)}>{startup.conclusion.investment_recommendation}</Badge>
                       </div>
-                      <div className='flex items-center gap-2'>
+                      <div className='flex items-center gap-2 w-full md:w-auto justify-end md:justify-start'>
                         <Button variant="outline" size="sm">
-                          View <ArrowRight className="ml-2 hidden sm:inline" />
+                          View Analysis <ArrowRight className="ml-2 hidden sm:inline" />
                         </Button>
                         <AlertDialog onOpenChange={(open) => !open && setStartupToDelete(null)}>
                            <AlertDialogTrigger asChild>
