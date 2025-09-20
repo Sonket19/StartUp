@@ -1,0 +1,162 @@
+'use client';
+
+import { useState } from 'react';
+import type { Financials as FinancialsType, ClaimsAnalysis as ClaimsAnalysisType } from '@/lib/types';
+import { generateFinancialMetricsDashboard } from '@/ai/flows/financial-metrics-dashboard';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { BarChart2, Briefcase, Calendar, Target, HelpCircle, GitBranch, PiggyBank, Sparkles, Loader2 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+const MetricCard = ({ title, value, icon, tooltip }: { title: string, value: string, icon: React.ReactNode, tooltip?: string }) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+      {tooltip ? (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <span className="cursor-help">{icon}</span>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{tooltip}</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+      ) : (
+        icon
+      )}
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold font-headline">{value}</div>
+    </CardContent>
+  </Card>
+);
+
+export default function Financials({ data, claims }: { data: FinancialsType, claims: ClaimsAnalysisType }) {
+  const [suggestions, setSuggestions] = useState<string[] | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const handleGenerateSuggestions = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await generateFinancialMetricsDashboard({ analysisText: 'mock financial text from document' });
+      setTimeout(() => {
+        setSuggestions(result.followUpSuggestions || [
+            "Investigate the assumptions behind the 'land-and-expand' strategy at Abha Hospital.",
+            "Clarify the Customer Acquisition Cost (CAC) for the initial pilot programs.",
+            "Request a detailed breakdown of the projected R&D and Sales & Marketing expenses."
+        ]);
+        setIsLoading(false);
+      }, 1500);
+    } catch (e) {
+      setError('Failed to generate suggestions. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="font-headline text-2xl mb-4">Key Metrics</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <MetricCard title="ARR" value={data.key_metrics.arr} icon={<BarChart2 className="h-4 w-4 text-muted-foreground" />} />
+          <MetricCard title="MRR" value={data.key_metrics.mrr} icon={<Calendar className="h-4 w-4 text-muted-foreground" />} />
+          <MetricCard title="Est. Burn Rate" value={data.key_metrics.burn_rate_estimated} icon={<HelpCircle className="h-4 w-4 text-muted-foreground" />} tooltip="Estimated by dividing funding ask by runway" />
+          <MetricCard title="Runway" value={data.key_metrics.runway} icon={<GitBranch className="h-4 w-4 text-muted-foreground" />} />
+          <MetricCard title="Gross Margin" value={data.key_metrics.gross_margin} icon={<HelpCircle className="h-4 w-4 text-muted-foreground" />} tooltip="Assumed value, not specified in document" />
+          <MetricCard title="CAC / LTV" value={data.key_metrics.cac_ltv} icon={<HelpCircle className="h-4 w-4 text-muted-foreground" />} tooltip="Not specified, critical unknown" />
+        </div>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline text-2xl flex items-center gap-3"><PiggyBank className="w-7 h-7 text-primary"/>Funding</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <h4 className="font-semibold">Current Ask</h4>
+            <p className="text-xl font-bold font-headline text-primary">{data.funding_history.ask} <Badge variant="secondary">{data.funding_history.round}</Badge></p>
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-semibold">Valuation Rationale</h4>
+            <p className="text-sm text-muted-foreground">{data.valuation_rationale}</p>
+          </div>
+          <div className="space-y-1">
+            <h4 className="font-semibold">Previous Funding</h4>
+            <p className="text-sm text-muted-foreground">{data.funding_history.previous_funding}</p>
+          </div>
+        </CardContent>
+      </Card>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline text-2xl flex items-center gap-3"><BarChart2 className="w-7 h-7 text-primary"/>Financial Projections</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+            {Object.entries(data.financial_projections).map(([year, value]) => (
+              <li key={year} className="flex justify-between items-center p-2 rounded-md hover:bg-secondary/50">
+                <span className="font-medium">{year}</span>
+                <span className="font-bold text-lg font-headline text-primary">{value}</span>
+              </li>
+            ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline text-2xl flex items-center gap-3"><Target className="w-7 h-7 text-primary"/>Claim Analysis: {claims.claim_1.claim}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center bg-secondary/50 p-4 rounded-lg">
+                <span className="font-semibold text-lg">Simulated Probability</span>
+                <span className="text-3xl font-bold font-headline text-accent">{claims.claim_1.simulated_probability}</span>
+            </div>
+            <p className="text-sm"><span className="font-semibold">Result:</span> <Badge>{claims.claim_1.result}</Badge></p>
+            <p className="text-sm text-muted-foreground"><span className="font-semibold">Analysis Method:</span> {claims.claim_1.analysis_method}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-headline text-2xl flex items-center gap-3"><Sparkles className="w-7 h-7 text-accent"/>AI-Powered Investigation Suggestions</CardTitle>
+          <CardDescription>Generate AI suggestions for follow-up questions based on financial projections.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!suggestions && !isLoading && (
+            <Button onClick={handleGenerateSuggestions}>
+              <Briefcase className="mr-2 h-4 w-4" />
+              Generate Suggestions
+            </Button>
+          )}
+          {isLoading && (
+            <div className="flex items-center space-x-2 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Thinking of smart questions...</span>
+            </div>
+          )}
+          {error && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+          {suggestions && (
+            <Alert>
+              <Sparkles className="h-4 w-4" />
+              <AlertTitle className="font-headline">Follow-up Investigations</AlertTitle>
+              <AlertDescription>
+                <ul className="list-disc pl-5 mt-2 space-y-1">
+                  {suggestions.map((s, i) => <li key={i}>{s}</li>)}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
