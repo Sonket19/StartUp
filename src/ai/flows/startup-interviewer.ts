@@ -36,7 +36,7 @@ const startupInterviewerPrompt = ai.definePrompt({
   name: 'startupInterviewerPrompt',
   input: {schema: StartupInterviewerInputSchema},
   output: {schema: StartupInterviewerOutputSchema},
-  model: googleAI.model('gemini-2.5-flash'),
+  model: googleAI.model('gemini-1.5-pro'),
   prompt: `You are an expert startup analyst acting as a chatbot. Your goal is to ask deep, insightful questions to better understand a startup. You have been provided with an initial analysis of the company.
 
   Based on the provided analysis and the conversation history, ask the user a single, relevant follow-up question that would help you dig deeper into their business. Keep your questions concise and focused. Start the conversation with a greeting and your first question.
