@@ -44,19 +44,10 @@ const getRecommendationBadgeVariant = (recommendation: 'Proceed' | 'Monitor' | '
 
 export default function InvestorDashboard() {
   const [startups, setStartups] = useState<AnalysisData[]>(allAnalysisData);
-  const [startupToDelete, setStartupToDelete] = useState<AnalysisData | null>(null);
-
-  const handleDelete = () => {
-    if (startupToDelete) {
-      setStartups(startups.filter(s => s.company_overview.id !== startupToDelete.company_overview.id));
-      setStartupToDelete(null);
-    }
+  
+  const handleDelete = (startupId: string) => {
+    setStartups(currentStartups => currentStartups.filter(s => s.company_overview.id !== startupId));
   };
-
-  const openDeleteDialog = (e: React.MouseEvent, startup: AnalysisData) => {
-    e.preventDefault();
-    setStartupToDelete(startup);
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -98,9 +89,9 @@ export default function InvestorDashboard() {
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/startup/${startup.company_overview.id}`}>View</Link>
                         </Button>
-                        <AlertDialog onOpenChange={(open) => !open && setStartupToDelete(null)}>
+                        <AlertDialog>
                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={(e) => openDeleteDialog(e, startup)}>
+                              <Button variant="ghost" size="icon">
                                 <Trash2 className="text-destructive"/>
                               </Button>
                            </AlertDialogTrigger>
@@ -108,12 +99,12 @@ export default function InvestorDashboard() {
                                <AlertDialogHeader>
                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                  <AlertDialogDescription>
-                                   This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startupToDelete?.company_overview.name}</span>.
+                                   This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startup.company_overview.name}</span>.
                                  </AlertDialogDescription>
                                </AlertDialogHeader>
                                <AlertDialogFooter>
                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                 <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                 <AlertDialogAction onClick={() => handleDelete(startup.company_overview.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                                </AlertDialogFooter>
                            </AlertDialogContent>
                         </AlertDialog>
