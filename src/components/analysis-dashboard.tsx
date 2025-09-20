@@ -129,7 +129,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
                 <DialogClose asChild>
                   <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
                     {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldAlert className="mr-2 h-4 w-4" />}
-                    {isRecalculating ? 'Recalculating...' : 'Recalculate & Close'}
+                    {isRecalculating ? 'Recalculating...' : 'Generate Summary'}
                   </Button>
                 </DialogClose>
               </DialogFooter>
