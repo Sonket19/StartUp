@@ -136,45 +136,45 @@ export default function RiskAnalysis({ riskMetrics: initialRiskMetrics, conclusi
             <CardDescription>Generated composite score and narrative justification.</CardDescription>
           </div>
           <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline"><SlidersHorizontal /> Customize Score</Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[625px]">
-                <DialogHeader>
-                  <DialogTitle className="font-headline text-2xl flex items-center gap-3"><SlidersHorizontal className="w-7 h-7 text-primary"/>Customize Score Weightage</DialogTitle>
-                  <DialogDescription>
-                    Adjust the importance of each factor to recalculate the safety score. The total must be 100%.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-6 py-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                    {(Object.keys(weights) as Array<keyof Weightages>).map(key => (
-                        <div key={key} className="grid gap-2">
-                            <div className="flex justify-between">
-                                <Label htmlFor={key} className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</Label>
-                                <span className="text-sm font-medium">{weights[key]}%</span>
-                            </div>
-                            <Slider id={key} value={[weights[key]]} onValueChange={(val) => handleWeightChange(key, val)} max={100} step={5} />
-                        </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-end">
-                      <div className="flex items-center gap-2">
-                          <Label>Total Weight:</Label>
-                          <Badge variant={totalWeight === 100 ? 'default' : 'destructive'}>{totalWeight}%</Badge>
+            <DialogTrigger asChild>
+              <Button variant="outline"><SlidersHorizontal /> Generate Summary</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[625px]">
+              <DialogHeader>
+                <DialogTitle className="font-headline text-2xl flex items-center gap-3"><SlidersHorizontal className="w-7 h-7 text-primary"/>Customize Score Weightage</DialogTitle>
+                <DialogDescription>
+                  Adjust the importance of each factor to recalculate the safety score. The total must be 100%.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-6 py-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                  {(Object.keys(weights) as Array<keyof Weightages>).map(key => (
+                      <div key={key} className="grid gap-2">
+                          <div className="flex justify-between">
+                              <Label htmlFor={key} className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</Label>
+                              <span className="text-sm font-medium">{weights[key]}%</span>
+                          </div>
+                          <Slider id={key} value={[weights[key]]} onValueChange={(val) => handleWeightChange(key, val)} max={100} step={5} />
                       </div>
-                  </div>
+                  ))}
                 </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      {isRecalculating ? 'Recalculating...' : 'Recalculate & Close'}
-                    </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                <div className="flex items-center justify-end">
+                    <div className="flex items-center gap-2">
+                        <Label>Total Weight:</Label>
+                        <Badge variant={totalWeight === 100 ? 'default' : 'destructive'}>{totalWeight}%</Badge>
+                    </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    {isRecalculating ? 'Recalculating...' : 'Recalculate & Close'}
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row items-center gap-8">
           <div className="flex-shrink-0">
@@ -219,4 +219,3 @@ export default function RiskAnalysis({ riskMetrics: initialRiskMetrics, conclusi
     </div>
   );
 }
-
