@@ -199,7 +199,7 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
                     Generating...
                 </>
             ) : (
-                'Generate Analysis'
+                'Upload Data'
             )}
           </Button>
         </CardContent>
