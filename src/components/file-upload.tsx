@@ -30,15 +30,16 @@ const FileInput = ({
   accept: string;
 }) => (
     <div className="space-y-2">
-        <Label htmlFor={id} className="flex items-center gap-2 font-semibold">
+        <Label className="flex items-center gap-2 font-semibold">
             {icon}
             {label}
         </Label>
         <div className="relative flex items-center justify-between rounded-lg border bg-secondary/30 p-2 text-sm">
+            <Label htmlFor={id} className="absolute inset-0 z-10 h-full w-full cursor-pointer" />
             <Input
               id={id}
               type="file"
-              className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+              className="sr-only"
               onChange={onFileChange}
               accept={accept}
             />
@@ -50,7 +51,7 @@ const FileInput = ({
             ) : (
                 <span className="text-muted-foreground">No file selected</span>
             )}
-            <Button size="sm" variant="outline" className="relative z-20 pointer-events-none">
+            <Button size="sm" variant="outline" className="relative z-20">
                 Browse
             </Button>
         </div>
@@ -86,15 +87,15 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
 
   const handleUploadClick = async () => {
     setError(null);
-    if (!pitchDeck) {
-        setError('Please select a pitch deck file to upload.');
+    if (!pitchDeck && !videoFile && !audioFile && !additionalInfo.trim()) {
+        setError('Please provide at least one data source to upload.');
         return;
     }
     
     setIsLoading(true);
 
     const formData = new FormData();
-    formData.append('pitch_deck', pitchDeck);
+    if(pitchDeck) formData.append('pitch_deck', pitchDeck);
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/upload`, {
@@ -110,6 +111,10 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
         const result = await response.json();
         
         console.log('Upload successful:', result);
+        toast({
+            title: "Analysis Started",
+            description: "Your document has been uploaded and analysis is underway.",
+        });
 
         onGenerate();
 
@@ -187,7 +192,7 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
                 </Alert>
             )}
             
-          <Button size="lg" className="w-full font-bold" onClick={handleUploadClick} disabled={!pitchDeck || isLoading}>
+          <Button size="lg" className="w-full font-bold" onClick={handleUploadClick} disabled={!canGenerate || isLoading}>
             {isLoading ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
