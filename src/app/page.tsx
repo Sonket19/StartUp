@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { allAnalysisData } from '@/lib/mock-data';
 import type { AnalysisData } from '@/lib/types';
 import {
   Table,
@@ -14,7 +13,7 @@ import {
 } from "@/components/ui/table"
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Download, Upload } from 'lucide-react';
+import { Trash2, Download, Upload, Loader2, AlertTriangle } from 'lucide-react';
 import Header from '@/components/header';
 import {
   AlertDialog,
@@ -37,10 +36,35 @@ import {
 } from '@/components/ui/dialog';
 import FileUpload from '@/components/file-upload';
 import { useRouter } from 'next/navigation';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function InvestorDashboard() {
-  const [startups, setStartups] = useState<AnalysisData[]>(allAnalysisData);
+  const [startups, setStartups] = useState<AnalysisData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchDeals = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch deals. Please try again later.');
+        }
+        const data = await response.json();
+        setStartups(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDeals();
+  }, []);
   
   const handleDelete = (startupId: string) => {
     setStartups(currentStartups => currentStartups.filter(s => s.company_overview.id !== startupId));
@@ -48,9 +72,141 @@ export default function InvestorDashboard() {
 
   const handleGenerate = () => {
     // This would ideally be a real navigation after a real analysis is created.
-    // For now, it just navigates to the first mock startup.
-    router.push('/startup/sia');
+    // For now, it just navigates to the first mock startup if available.
+    if(startups.length > 0){
+        router.push(`/startup/${startups[0].company_overview.id}`);
+    } else {
+        // Maybe refresh or wait. For now, we do nothing.
+    }
   }
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <Card>
+           <Table>
+              <TableHeader>
+                <TableRow className="bg-secondary hover:bg-secondary">
+                  <TableHead className="font-semibold">Startup</TableHead>
+                  <TableHead className="hidden sm:table-cell text-center font-semibold">Safety Score</TableHead>
+                  <TableHead className="hidden md:table-cell font-semibold">Recommendation</TableHead>
+                  <TableHead className="text-right font-semibold">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[...Array(3)].map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton className="h-5 w-24 mb-1" />
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-center"><Skeleton className="h-6 w-16 mx-auto" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-full" /></TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-9 w-[100px]" />
+                        <Skeleton className="h-10 w-10" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+        </Card>
+      );
+    }
+
+    if (error) {
+        return (
+            <Alert variant="destructive" className="mt-8">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Failed to Load Deals</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        );
+    }
+
+    if (startups.length > 0) {
+      return (
+        <Card>
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-secondary hover:bg-secondary">
+                <TableHead className="font-semibold">Startup</TableHead>
+                <TableHead className="hidden sm:table-cell text-center font-semibold">Safety Score</TableHead>
+                <TableHead className="hidden md:table-cell font-semibold">Recommendation</TableHead>
+                <TableHead className="text-right font-semibold">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {startups.map(startup => {
+                return (
+                  <TableRow key={startup.company_overview.id}>
+                    <TableCell>
+                      <Link href={`/startup/${startup.company_overview.id}`} className='hover:underline'>
+                        <div className="font-medium font-headline">{startup.company_overview.name}</div>
+                        <div className="text-sm text-muted-foreground">{startup.company_overview.sector}</div>
+                      </Link>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{startup.risk_metrics.composite_investment_safety_score}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <p className="text-sm text-muted-foreground">{startup.conclusion.investment_recommendation}</p>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm">
+                          <Download />
+                          Word
+                        </Button>
+                        <AlertDialog>
+                           <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <Trash2 className="text-destructive"/>
+                              </Button>
+                           </AlertDialogTrigger>
+                           <AlertDialogContent>
+                               <AlertDialogHeader>
+                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                 <AlertDialogDescription>
+                                   This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startup.company_overview.name}</span>.
+                                 </AlertDialogDescription>
+                               </AlertDialogHeader>
+                               <AlertDialogFooter>
+                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                 <AlertDialogAction onClick={() => handleDelete(startup.company_overview.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                               </AlertDialogFooter>
+                           </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+      );
+    }
+
+    return (
+        <div className="text-center py-20 border-2 border-dashed rounded-lg">
+            <h2 className="text-2xl font-headline font-semibold">No Startups Analyzed</h2>
+            <p className="text-muted-foreground mt-2">You haven&apos;t analyzed any startups yet.</p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="mt-4">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Your First Document
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <FileUpload onGenerate={handleGenerate} />
+              </DialogContent>
+            </Dialog>
+        </div>
+    );
+  };
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -74,81 +230,7 @@ export default function InvestorDashboard() {
             </Dialog>
         </div>
         
-        {startups.length > 0 ? (
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-secondary hover:bg-secondary">
-                  <TableHead className="font-semibold">Startup</TableHead>
-                  <TableHead className="hidden sm:table-cell text-center font-semibold">Safety Score</TableHead>
-                  <TableHead className="hidden md:table-cell font-semibold">Recommendation</TableHead>
-                  <TableHead className="text-right font-semibold">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {startups.map(startup => {
-                  return (
-                    <TableRow key={startup.company_overview.id}>
-                      <TableCell>
-                        <Link href={`/startup/${startup.company_overview.id}`} className='hover:underline'>
-                          <div className="font-medium font-headline">{startup.company_overview.name}</div>
-                          <div className="text-sm text-muted-foreground">{startup.company_overview.sector}</div>
-                        </Link>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{startup.risk_metrics.composite_investment_safety_score}</TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <p className="text-sm text-muted-foreground">{startup.conclusion.investment_recommendation}</p>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm">
-                            <Download />
-                            Word
-                          </Button>
-                          <AlertDialog>
-                             <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <Trash2 className="text-destructive"/>
-                                </Button>
-                             </AlertDialogTrigger>
-                             <AlertDialogContent>
-                                 <AlertDialogHeader>
-                                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                   <AlertDialogDescription>
-                                     This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startup.company_overview.name}</span>.
-                                   </AlertDialogDescription>
-                                 </AlertDialogHeader>
-                                 <AlertDialogFooter>
-                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                   <AlertDialogAction onClick={() => handleDelete(startup.company_overview.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                                 </AlertDialogFooter>
-                             </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Card>
-        ) : (
-            <div className="text-center py-20 border-2 border-dashed rounded-lg">
-                <h2 className="text-2xl font-headline font-semibold">No Startups Analyzed</h2>
-                <p className="text-muted-foreground mt-2">You haven&apos;t analyzed any startups yet.</p>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="mt-4">
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload Your First Document
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-xl">
-                    <FileUpload onGenerate={handleGenerate} />
-                  </DialogContent>
-                </Dialog>
-            </div>
-        )}
+        {renderContent()}
       </main>
     </div>
   );

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import type { AnalysisData } from '@/lib/types';
-import { allAnalysisData } from '@/lib/mock-data';
 import AnalysisDashboard from '@/components/analysis-dashboard';
 import { Loader2 } from 'lucide-react';
 import Header from '@/components/header';
@@ -10,22 +9,38 @@ import { notFound } from 'next/navigation';
 
 export default function StartupPage({ params }: { params: { startupId: string } }) {
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
-  const [isLoading, setIsLoading] =useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
-    const data = allAnalysisData.find(d => d.company_overview.id === params.startupId);
-    if (data) {
-      // Simulate loading
-      setTimeout(() => {
-        setAnalysisData(data);
+    const fetchDeal = async () => {
+      if (params.startupId === 'new') {
         setIsLoading(false);
-      }, 500);
-    } else {
-      // If no data, and we're not creating a new one, show not found.
-      if (params.startupId !== 'new') {
-        notFound();
+        // Potentially set some default state for a new analysis
+        return;
       }
-    }
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deal/${params.startupId}`);
+        if (!response.ok) {
+          if(response.status === 404) {
+            notFound();
+          }
+          throw new Error('Failed to fetch analysis data.');
+        }
+        const data = await response.json();
+        setAnalysisData(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDeal();
   }, [params.startupId]);
 
 
@@ -38,6 +53,10 @@ export default function StartupPage({ params }: { params: { startupId: string } 
             <Loader2 className="w-16 h-16 animate-spin text-primary mb-4" />
             <h2 className="text-2xl font-headline font-semibold text-primary">Loading Analysis...</h2>
             <p className="text-muted-foreground mt-2">Our AI is hard at work. This might take a moment.</p>
+          </div>
+        ) : error ? (
+           <div className="text-center py-20">
+              <h2 className="text-2xl font-headline font-semibold text-destructive">{error}</h2>
           </div>
         ) : analysisData ? (
           <AnalysisDashboard analysisData={analysisData} />
