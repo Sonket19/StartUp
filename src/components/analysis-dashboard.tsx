@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 
 type AnalysisDashboardProps = {
   analysisData: AnalysisData;
+  startupId: string;
 };
 
 type Weightages = {
@@ -41,13 +42,13 @@ type Weightages = {
 
 const NoDataComponent = ({ onGenerateClick }: { onGenerateClick: () => void }) => (
     <div className="text-center py-20 border-2 border-dashed rounded-lg">
-        <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
-        <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed. You can try generating a summary.</p>
+        <h2 className="text-2xl font-headline font-semibold">Analysis data is not available.</h2>
+        <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed. You can generate a summary.</p>
     </div>
 );
 
 
-export default function AnalysisDashboard({ analysisData: initialAnalysisData }: AnalysisDashboardProps) {
+export default function AnalysisDashboard({ analysisData: initialAnalysisData, startupId }: AnalysisDashboardProps) {
   const [analysisData, setAnalysisData] = useState(initialAnalysisData);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
@@ -84,7 +85,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       console.log('Request Payload:', JSON.stringify(requestBody, null, 2));
 
       // 1. Call generate_memo endpoint
-      const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${analysisData.deal_id}`, {
+      const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${startupId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
@@ -124,7 +125,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
     }
   };
 
-  const memo = analysisData.memo?.draft_v1;
+  const memo = analysisData?.memo?.draft_v1;
 
   return (
     <div className="w-full animate-in fade-in-50 duration-500">
@@ -227,7 +228,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           {memo ? <MarketAnalysis data={memo.market_analysis} /> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="model">
-          {memo ? <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
+          {memo ? <BusinessModel data={memo.business_model} dealId={startupId}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="financials">
           {memo ? <Financials data={memo.financials} claims={memo.claims_analysis}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}

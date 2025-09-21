@@ -61,7 +61,7 @@ export default function StartupPage({ params }: { params: { startupId: string } 
               <h2 className="text-2xl font-headline font-semibold text-destructive">{error}</h2>
           </div>
         ) : analysisData ? (
-          <AnalysisDashboard analysisData={analysisData} />
+          <AnalysisDashboard analysisData={analysisData} startupId={startupId}/>
         ) : (
           <div className="text-center py-20">
               <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis not found.</h2>
