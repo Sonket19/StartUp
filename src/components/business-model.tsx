@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { DollarSign, Layers, TrendingUp, Lightbulb, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-export default function BusinessModel({ data }: { data: BusinessModelType }) {
+export default function BusinessModel({ data, dealId }: { data: BusinessModelType, dealId: string }) {
   const [insight, setInsight] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,13 +18,11 @@ export default function BusinessModel({ data }: { data: BusinessModelType }) {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await businessModelVisualization({ fileId: 'mock-file-id' });
-      setTimeout(() => {
-        setInsight(result.insights || "The startup's hybrid model of SaaS, on-premise, and service fees provides diverse revenue streams. The pricing seems competitive, and the 'land-and-expand' strategy with large clients shows high scalability potential.");
-        setIsLoading(false);
-      }, 1500);
+      const result = await businessModelVisualization({ fileId: dealId });
+      setInsight(result.insights);
     } catch (e) {
       setError('Failed to generate insights. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -60,8 +58,12 @@ export default function BusinessModel({ data }: { data: BusinessModelType }) {
         </CardHeader>
         <CardContent className="space-y-4">
           {!insight && !isLoading && (
-            <Button onClick={handleGenerateInsights}>
-              <TrendingUp className="mr-2 h-4 w-4" />
+            <Button onClick={handleGenerateInsights} disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <TrendingUp className="mr-2 h-4 w-4" />
+              )}
               Generate Insights
             </Button>
           )}

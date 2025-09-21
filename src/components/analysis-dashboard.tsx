@@ -216,7 +216,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           <MarketAnalysis data={memo.market_analysis} />
         </TabsContent>
         <TabsContent value="model">
-          <BusinessModel data={memo.business_model} />
+          <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/>
         </TabsContent>
         <TabsContent value="financials">
           <Financials data={memo.financials} claims={memo.claims_analysis}/>

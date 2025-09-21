@@ -37,7 +37,7 @@ const MetricCard = ({ title, value, icon, tooltip }: { title: string, value?: st
 );
 
 export default function Financials({ data, claims }: { data: FinancialsType, claims: ClaimsAnalysisType }) {
-  const [suggestions, setSuggestions] = useState<string[] | null>(null);
+  const [suggestions, setSuggestions] = useState<string[] | undefined | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -45,17 +45,11 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
     setIsLoading(true);
     setError(null);
     try {
-      const result = await generateFinancialMetricsDashboard({ analysisText: 'mock financial text from document' });
-      setTimeout(() => {
-        setSuggestions(result.followUpSuggestions || [
-            "Investigate the assumptions behind the 'land-and-expand' strategy at Abha Hospital.",
-            "Clarify the Customer Acquisition Cost (CAC) for the initial pilot programs.",
-            "Request a detailed breakdown of the projected R&D and Sales & Marketing expenses."
-        ]);
-        setIsLoading(false);
-      }, 1500);
+      const result = await generateFinancialMetricsDashboard({ analysisText: JSON.stringify(data) + JSON.stringify(claims) });
+      setSuggestions(result.followUpSuggestions);
     } catch (e) {
       setError('Failed to generate suggestions. Please try again.');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -65,8 +59,8 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
       <div>
         <h2 className="font-headline text-2xl mb-4">Key Metrics</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <MetricCard title="ARR" value={data.srr_mrr.current_booked_arr} icon={<BarChart2 className="h-4 w-4 text-muted-foreground" />} />
-          <MetricCard title="MRR" value={data.srr_mrr.current_mrr} icon={<Calendar className="h-4 w-4 text-muted-foreground" />} />
+          <MetricCard title="ARR" value={data.arr_mrr.current_booked_arr} icon={<BarChart2 className="h-4 w-4 text-muted-foreground" />} />
+          <MetricCard title="MRR" value={data.arr_mrr.current_mrr} icon={<Calendar className="h-4 w-4 text-muted-foreground" />} />
           <MetricCard title="Est. Burn Rate" value={data.burn_and_runway.implied_net_burn} icon={<HelpCircle className="h-4 w-4 text-muted-foreground" />} tooltip="Estimated by dividing funding ask by runway" />
           <MetricCard title="Runway" value={data.burn_and_runway.stated_runway} icon={<GitBranch className="h-4 w-4 text-muted-foreground" />} />
         </div>
@@ -131,8 +125,12 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
         </CardHeader>
         <CardContent className="space-y-4">
           {!suggestions && !isLoading && (
-            <Button onClick={handleGenerateSuggestions}>
-              <Briefcase className="mr-2 h-4 w-4" />
+            <Button onClick={handleGenerateSuggestions} disabled={isLoading}>
+               {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Briefcase className="mr-2 h-4 w-4" />
+              )}
               Generate Suggestions
             </Button>
           )}
