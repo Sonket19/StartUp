@@ -9,6 +9,7 @@ import Header from '@/components/header';
 import { notFound } from 'next/navigation';
 
 export default function StartupPage({ params }: { params: { startupId: string } }) {
+  const { startupId } = params;
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +17,7 @@ export default function StartupPage({ params }: { params: { startupId: string } 
 
   useEffect(() => {
     const fetchDeal = async () => {
-      if (params.startupId === 'new') {
+      if (startupId === 'new') {
         setIsLoading(false);
         // Potentially set some default state for a new analysis
         return;
@@ -25,7 +26,7 @@ export default function StartupPage({ params }: { params: { startupId: string } 
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals/${params.startupId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals/${startupId}`);
         if (!response.ok) {
           if(response.status === 404) {
             notFound();
@@ -42,7 +43,7 @@ export default function StartupPage({ params }: { params: { startupId: string } 
     };
 
     fetchDeal();
-  }, [params.startupId]);
+  }, [startupId]);
 
 
   return (
