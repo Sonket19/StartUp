@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import type { AnalysisData } from '@/lib/types';
 import AnalysisDashboard from '@/components/analysis-dashboard';
 import { Loader2 } from 'lucide-react';
