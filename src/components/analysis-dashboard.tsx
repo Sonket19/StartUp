@@ -158,9 +158,9 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
             const contentDisposition = response.headers.get('content-disposition');
             let filename = `${startupId}-${fileType}.unknown`;
             if (contentDisposition) {
-                const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
                 if (filenameMatch && filenameMatch[1]) {
-                    filename = filenameMatch[1];
+                    filename = filenameMatch[1].replace(/['"]/g, '');
                 }
             }
 
