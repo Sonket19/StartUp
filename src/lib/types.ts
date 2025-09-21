@@ -104,6 +104,7 @@ export type Conclusion = {
 };
 
 export type AnalysisData = {
+  deal_id: string;
   company_overview: CompanyOverview;
   market_analysis: MarketAnalysis;
   business_model: BusinessModel;

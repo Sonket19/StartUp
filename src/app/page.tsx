@@ -67,14 +67,14 @@ export default function InvestorDashboard() {
   }, []);
   
   const handleDelete = (startupId: string) => {
-    setStartups(currentStartups => currentStartups.filter(s => s.company_overview.id !== startupId));
+    setStartups(currentStartups => currentStartups.filter(s => s.deal_id !== startupId));
   };
 
   const handleGenerate = () => {
     // This would ideally be a real navigation after a real analysis is created.
     // For now, it just navigates to the first mock startup if available.
     if(startups.length > 0){
-        router.push(`/startup/${startups[0].company_overview.id}`);
+        router.push(`/startup/${startups[0].deal_id}`);
     } else {
         // Maybe refresh or wait. For now, we do nothing.
     }
@@ -141,9 +141,9 @@ export default function InvestorDashboard() {
             <TableBody>
               {startups.map(startup => {
                 return (
-                  <TableRow key={startup.company_overview.id}>
+                  <TableRow key={startup.deal_id}>
                     <TableCell>
-                      <Link href={`/startup/${startup.company_overview.id}`} className='hover:underline'>
+                      <Link href={`/startup/${startup.deal_id}`} className='hover:underline'>
                         <div className="font-medium font-headline">{startup.company_overview.name}</div>
                         <div className="text-sm text-muted-foreground">{startup.company_overview.sector}</div>
                       </Link>
@@ -173,7 +173,7 @@ export default function InvestorDashboard() {
                                </AlertDialogHeader>
                                <AlertDialogFooter>
                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                 <AlertDialogAction onClick={() => handleDelete(startup.company_overview.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                 <AlertDialogAction onClick={() => handleDelete(startup.deal_id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                                </AlertDialogFooter>
                            </AlertDialogContent>
                         </AlertDialog>
