@@ -76,15 +76,17 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
   const handleRecalculate = async () => {
     setIsRecalculating(true);
     
-    try {
-      const requestBody = {
-        team_strength: weights.teamStrength,
-        market_opportunity: weights.marketOpportunity,
-        traction: weights.traction,
-        claim_credibility: weights.claimCredibility,
-        financial_health: weights.financialHealth
-      };
+    const requestBody = {
+      team_strength: weights.teamStrength,
+      market_opportunity: weights.marketOpportunity,
+      traction: weights.traction,
+      claim_credibility: weights.claimCredibility,
+      financial_health: weights.financialHealth
+    };
+    
+    console.log('Request Payload:', requestBody);
 
+    try {
       // 1. Call generate_memo endpoint
       const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${startupId}`, {
         method: 'POST',
@@ -128,8 +130,25 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
 
   const handleDownloadSourceFile = async (fileType: 'pitch_deck' | 'video_pitch' | 'audio_pitch' | 'text_notes') => {
         setDownloadingFile(fileType);
+        
+        let endpoint = '';
+        switch (fileType) {
+            case 'pitch_deck':
+                endpoint = `/download_pitch_deck/${startupId}`;
+                break;
+            case 'video_pitch':
+                endpoint = `/download_video_pitch/${startupId}`;
+                break;
+            case 'audio_pitch':
+                endpoint = `/download_audio_pitch/${startupId}`;
+                break;
+            case 'text_notes':
+                endpoint = `/download_text_notes/${startupId}`;
+                break;
+        }
+
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/download_source/${startupId}?file_type=${fileType}`);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${endpoint}`);
             
             if (!response.ok) {
                 throw new Error(`Failed to download ${fileType.replace('_', ' ')}.`);
@@ -174,6 +193,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
   const memo = analysisData?.memo?.draft_v1;
   const rawFiles = analysisData?.raw_files || {};
 
+  console.log("analysisData:", analysisData);
 
   return (
     <div className="w-full animate-in fade-in-50 duration-500">
@@ -272,6 +292,9 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
                 </div>
               </div>
               <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="ghost">Close</Button>
+                  </DialogClose>
                   <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
                     {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldAlert className="mr-2 h-4 w-4" />}
                     {isRecalculating ? 'Recalculating...' : 'Generate Summary'}
@@ -311,4 +334,5 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
     </div>
   );
 
+    
     
