@@ -51,7 +51,7 @@ export default function InvestorDashboard() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/deals`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals`);
         if (!response.ok) {
           throw new Error('Failed to fetch deals. Please try again later.');
         }
