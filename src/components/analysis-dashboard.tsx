@@ -104,15 +104,6 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
 
   const memo = analysisData.memo?.draft_v1;
 
-  if (!memo) {
-    return (
-        <div className="text-center py-20">
-            <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
-            <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed.</p>
-        </div>
-    );
-  }
-
   return (
     <div className="w-full animate-in fade-in-50 duration-500">
       <div className="flex justify-end gap-4 mb-4">
@@ -209,25 +200,38 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           <TabsTrigger value="risks" className="h-12"><ShieldAlert className="mr-2"/>Risks</TabsTrigger>
           <TabsTrigger value="chatbot" className="h-12"><MessageCircle className="mr-2"/>Chatbot</TabsTrigger>
         </TabsList>
-        <TabsContent value="overview">
-          <CompanyOverview data={memo.company_overview} />
-        </TabsContent>
-        <TabsContent value="market">
-          <MarketAnalysis data={memo.market_analysis} />
-        </TabsContent>
-        <TabsContent value="model">
-          <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/>
-        </TabsContent>
-        <TabsContent value="financials">
-          <Financials data={memo.financials} claims={memo.claims_analysis}/>
-        </TabsContent>
-        <TabsContent value="risks">
-          <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} fullAnalysisData={analysisData} isRecalculating={isRecalculating} />
-        </TabsContent>
-        <TabsContent value="chatbot">
-          <Chatbot analysisData={analysisData} />
-        </TabsContent>
+        {memo ? (
+          <>
+            <TabsContent value="overview">
+              <CompanyOverview data={memo.company_overview} />
+            </TabsContent>
+            <TabsContent value="market">
+              <MarketAnalysis data={memo.market_analysis} />
+            </TabsContent>
+            <TabsContent value="model">
+              <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/>
+            </TabsContent>
+            <TabsContent value="financials">
+              <Financials data={memo.financials} claims={memo.claims_analysis}/>
+            </TabsContent>
+            <TabsContent value="risks">
+              <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} fullAnalysisData={analysisData} isRecalculating={isRecalculating} />
+            </TabsContent>
+            <TabsContent value="chatbot">
+              <Chatbot analysisData={analysisData} />
+            </TabsContent>
+          </>
+        ) : (
+          <TabsContent value="overview">
+            <div className="text-center py-20">
+                <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
+                <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed.</p>
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );
 }
+
+  
