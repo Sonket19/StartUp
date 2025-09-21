@@ -44,6 +44,7 @@ export default function InvestorDashboard() {
   const [startups, setStartups] = useState<AnalysisData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -69,6 +70,29 @@ export default function InvestorDashboard() {
   
   const handleDelete = (startupId: string) => {
     setStartups(currentStartups => currentStartups.filter(s => s.deal_id !== startupId));
+  };
+
+  const handleDownload = async (dealId: string, companyName: string) => {
+    setDownloading(dealId);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/download_memo/${dealId}`);
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${companyName}-memo.docx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download memo", error);
+    } finally {
+      setDownloading(null);
+    }
   };
 
   const handleGenerate = () => {
@@ -160,8 +184,17 @@ export default function InvestorDashboard() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="outline" size="sm">
-                          <Download />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={downloading === startup.deal_id}
+                          onClick={() => handleDownload(startup.deal_id, startup.metadata.company_name)}
+                        >
+                          {downloading === startup.deal_id ? (
+                            <Loader2 className="animate-spin" />
+                          ) : (
+                            <Download />
+                          )}
                           Word
                         </Button>
                         <AlertDialog>
