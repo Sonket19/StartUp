@@ -175,7 +175,7 @@ export default function InvestorDashboard() {
                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                  <AlertDialogDescription>
                                    This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startup.metadata.company_name}</span>.
-                                 </Description>
+                                 </AlertDialogDescription>
                                </AlertDialogHeader>
                                <AlertDialogFooter>
                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
