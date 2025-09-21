@@ -175,7 +175,7 @@ export default function InvestorDashboard() {
                       </Link>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">
-                      {memo ? memo.risk_metrics.composite_risk_score.value : 'N/A'}
+                      {memo ? memo.risk_metrics.composite_risk_score : 'N/A'}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <p className="text-sm text-muted-foreground">
