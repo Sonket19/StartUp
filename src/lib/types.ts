@@ -1,39 +1,43 @@
+
 export type Founder = {
   name: string;
-  education: string;
-  professional_background: string;
-  previous_ventures: string;
+  role: string | null;
+  education: string | null;
+  experience: string | null;
+  previous_ventures: string | null;
 };
 
 export type CompanyOverview = {
-  id: string;
   name: string;
   sector: string;
   founders: Founder[];
-  technology: string;
+  technology: {
+    stack: string;
+    facilities: string;
+  };
 };
 
 export type MarketValue = {
-  name: string;
   value: string;
-  cagr?: string;
-  projection?: string;
+  cagr: string;
+  source: string;
 };
 
 export type MarketAnalysis = {
-  industry_size_and_growth: {
-    total_addressable_market: MarketValue;
-    serviceable_obtainable_market: MarketValue;
+  market_size: {
+    som: MarketValue;
+    tam: MarketValue;
   };
-  sub_segment_opportunities: string;
-  competitor_details: {
+  latest_news: string;
+  competitor_analysis: {
     name: string;
-    description: string;
     business_model: string;
     funding: string;
-    margins_and_growth: string;
+    margins: string;
+    growth_rate: string;
   }[];
-  recent_news: string;
+  sub_segment_opportunities: string;
+  industry_overview: string;
 };
 
 export type PricingStrategy = {
@@ -42,74 +46,108 @@ export type PricingStrategy = {
 };
 
 export type BusinessModel = {
-  revenue_streams: string;
-  pricing_strategy: PricingStrategy[];
+  revenue_model: string;
+  pricing: string;
+  unit_economics: {
+    customer_lifetime_value_ltv: string;
+    customer_acquisition_cost_cac: string;
+    average_contract_value_acv: string;
+    gross_margins: string;
+  };
   scalability: string;
 };
 
-export type KeyMetrics = {
-  arr: string;
+export type FinancialMetrics = {
+  projected_revenue_fy26_27: string;
+  burn_rate_monthly: string;
+  runway_months: string;
+  projected_revenue_fy25_26: string;
   mrr: string;
-  burn_rate_estimated: string;
-  runway: string;
-  gross_margin: string;
-  cac_ltv: string;
-};
-
-export type FundingHistory = {
-  round: string;
-  ask: string;
-  previous_funding: string;
+  arr: string;
 };
 
 export type Financials = {
-  key_metrics: KeyMetrics;
-  funding_history: FundingHistory;
+  funding_history: string;
+  financial_metrics: FinancialMetrics;
   valuation_rationale: string;
-  financial_projections: Record<string, string>;
-};
-
-export type ClaimsAnalysis = {
-  claim_1: {
-    claim: string;
-    analysis_method: string;
-    input_dataset_length: string;
-    simulation_parameters: {
-      iterations: number;
-      random_seed: number;
-      qualified_leads: number;
-      conversion_rate_distribution: string;
-      acv_distribution: string;
+  current_round: {
+    ask_amount_inr: string;
+    stage: string;
+    ask_amount_usd: string;
+    use_of_funds: {
+      product_development: string;
+      sales_and_marketing: string;
+      operational_costs: string;
     };
-    simulated_probability: string;
-    result: string;
   };
 };
 
-export type RiskMetrics = {
-  composite_investment_safety_score: string;
-  narrative_justification: string;
+export type Claim = {
+  result: string;
+  simulated_probability: string;
+  simulation_parameters: {
+    runs: string;
+    new_customer_acquisition?: string;
+    pilot_conversions?: string;
+    time_horizon_months: number;
+    initial_customers?: number;
+    acv_distribution?: string;
+    assumptions?: string;
+  };
+  analysis_method: string;
+  claim: string;
+  rationale_for_method: string;
+}
+
+export type ClaimsAnalysis = {
+  claims: Claim[];
 };
 
-export type KeyRisk = {
-  risk: string;
-  mitigation: string;
+export type RiskMetrics = {
+  narrative_justification: string;
+  composite_risk_score: {
+    value: string;
+    interpretation: string;
+  };
 };
 
 export type Conclusion = {
-  summary_of_opportunity: string;
-  key_risks: KeyRisk[];
-  investment_recommendation: string;
-  recommendation_short: 'Proceed' | 'Monitor' | 'Decline';
+  risks: string[];
+  investment_thesis: string;
+  recommendation: string;
+  strengths: string[];
 };
 
-export type AnalysisData = {
+export type Memo = {
+  draft_v1: {
+    claims_analysis: ClaimsAnalysis;
+    market_analysis: MarketAnalysis;
+    financials: Financials;
+    company_overview: CompanyOverview;
+    conclusion: Conclusion;
+    business_model: BusinessModel;
+    risk_metrics: RiskMetrics;
+  }
+}
+
+export type Metadata = {
+  created_at: string;
+  sector: string;
   deal_id: string;
-  company_overview: CompanyOverview;
-  market_analysis: MarketAnalysis;
-  business_model: BusinessModel;
-  financials: Financials;
-  claims_analysis: ClaimsAnalysis;
-  risk_metrics: RiskMetrics;
-  conclusion: Conclusion;
+  company_name: string;
+  founder_names: string[];
+  error: string | null;
+  status: string;
+  processed_at: string;
+}
+
+export type AnalysisData = {
+  memo: Memo;
+  raw_files: {
+    pitch_deck_url: string;
+  };
+  extracted_text: any;
+  metadata: Metadata;
+  public_data: any;
+  deal_id: string;
 };
