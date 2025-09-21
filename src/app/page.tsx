@@ -145,8 +145,8 @@ export default function InvestorDashboard() {
                   <TableRow key={startup.deal_id}>
                     <TableCell>
                       <Link href={`/startup/${startup.deal_id}`} className='hover:underline'>
-                        <div className="font-medium font-headline">{memo.company_overview.name}</div>
-                        <div className="text-sm text-muted-foreground">{memo.company_overview.sector}</div>
+                        <div className="font-medium font-headline">{startup.metadata.company_name}</div>
+                        <div className="text-sm text-muted-foreground">{startup.metadata.sector}</div>
                       </Link>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{memo.risk_metrics.composite_risk_score.value}</TableCell>
@@ -169,7 +169,7 @@ export default function InvestorDashboard() {
                                <AlertDialogHeader>
                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                  <AlertDialogDescription>
-                                   This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{memo.company_overview.name}</span>.
+                                   This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startup.metadata.company_name}</span>.
                                  </AlertDialogDescription>
                                </AlertDialogHeader>
                                <AlertDialogFooter>
