@@ -184,19 +184,21 @@ export default function InvestorDashboard() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={downloading === startup.deal_id}
-                          onClick={() => handleDownload(startup.deal_id, startup.metadata.company_name)}
-                        >
-                          {downloading === startup.deal_id ? (
-                            <Loader2 className="animate-spin" />
-                          ) : (
-                            <Download />
-                          )}
-                          Word
-                        </Button>
+                        {memo && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={downloading === startup.deal_id}
+                            onClick={() => handleDownload(startup.deal_id, startup.metadata.company_name)}
+                          >
+                            {downloading === startup.deal_id ? (
+                              <Loader2 className="animate-spin" />
+                            ) : (
+                              <Download />
+                            )}
+                            Word
+                          </Button>
+                        )}
                         <AlertDialog>
                            <AlertDialogTrigger asChild>
                               <Button variant="ghost" size="icon">
