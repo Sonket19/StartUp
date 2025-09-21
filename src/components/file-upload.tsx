@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { UploadCloud, FileText, Video, Mic, Type, File } from 'lucide-react';
+import { UploadCloud, FileText, Video, Mic, Type, File, Loader2 } from 'lucide-react';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 type FileUploadProps = {
   onGenerate: () => void;
@@ -60,6 +62,9 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [additionalInfo, setAdditionalInfo] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const handlePitchDeckChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
@@ -79,8 +84,51 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
     }
   };
 
-  const handleUploadClick = () => {
-    onGenerate();
+  const handleUploadClick = async () => {
+    setError(null);
+    if (!canGenerate) {
+        setError('Please provide at least one data source.');
+        return;
+    }
+    
+    setIsLoading(true);
+
+    const formData = new FormData();
+    if (pitchDeck) {
+        formData.append('pitch_deck', pitchDeck);
+    }
+    // Note: Other files are not being sent as per the request to only handle pitch_deck for now.
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/upload`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ detail: 'An unknown error occurred' }));
+            throw new Error(errorData.detail || 'File upload failed');
+        }
+
+        // Assuming the API returns a JSON response with an ID or some data for the next step.
+        const result = await response.json();
+        
+        // TODO: Use the result from the API, e.g., result.id to navigate to the analysis page
+        console.log('Upload successful:', result);
+
+        onGenerate();
+
+    } catch (err: any) {
+        const errorMessage = err.message || 'An unexpected error occurred during upload.';
+        setError(errorMessage);
+        toast({
+            variant: "destructive",
+            title: "Upload Failed",
+            description: errorMessage,
+        });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const canGenerate = pitchDeck || videoFile || audioFile || additionalInfo.trim() !== '';
@@ -136,9 +184,23 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
                     className="min-h-[120px]"
                 />
             </div>
+
+            {error && (
+                <Alert variant="destructive">
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
             
-          <Button size="lg" className="w-full font-bold" onClick={handleUploadClick} disabled={!canGenerate}>
-            Generate Analysis
+          <Button size="lg" className="w-full font-bold" onClick={handleUploadClick} disabled={!canGenerate || isLoading}>
+            {isLoading ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                </>
+            ) : (
+                'Generate Analysis'
+            )}
           </Button>
         </CardContent>
       </Card>
