@@ -179,7 +179,7 @@ export default function InvestorDashboard() {
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <p className="text-sm text-muted-foreground">
-                        {memo ? memo.conclusion.recommendation : 'N/A'}
+                        {memo ? memo.conclusion.overall_attractiveness : 'N/A'}
                       </p>
                     </TableCell>
                     <TableCell className="text-right">
