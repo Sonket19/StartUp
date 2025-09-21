@@ -71,17 +71,21 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
     setIsRecalculating(true);
     
     try {
+      const requestBody = {
+        team_strength: weights.teamStrength,
+        market_opportunity: weights.marketOpportunity,
+        traction: weights.traction,
+        claim_credibility: weights.claimCredibility,
+        financial_health: weights.financialHealth
+      };
+
+      console.log('Request Payload:', JSON.stringify(requestBody, null, 2));
+
       // 1. Call generate_memo endpoint
       const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${analysisData.deal_id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          team_strength: weights.teamStrength,
-          market_opportunity: weights.marketOpportunity,
-          traction: weights.traction,
-          claim_credibility: weights.claimCredibility,
-          financial_health: weights.financialHealth
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!generateMemoResponse.ok) {
