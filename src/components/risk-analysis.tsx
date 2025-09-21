@@ -3,23 +3,9 @@
 
 import { useState } from 'react';
 import type { RiskMetrics, Conclusion, AnalysisData } from '@/lib/types';
-import { getRiskAssessmentSummary, RiskAssessmentSummaryInput } from '@/ai/flows/risk-assessment-summary';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AlertTriangle, ShieldCheck, CheckCircle, Info, SlidersHorizontal, Loader2 } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
-import { Label } from '@/components/ui/label';
-import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogClose,
-} from "@/components/ui/dialog"
 
 const ScoreCircle = ({ score, isLoading }: { score: string | number; isLoading?: boolean }) => {
     const numericScore = typeof score === 'string' ? parseFloat(score) : score;
@@ -74,9 +60,7 @@ const ScoreCircle = ({ score, isLoading }: { score: string | number; isLoading?:
 };
 
 
-export default function RiskAnalysis({ riskMetrics, conclusion, fullAnalysisData, isRecalculating }: { riskMetrics: RiskMetrics, conclusion: Conclusion, fullAnalysisData: AnalysisData, isRecalculating: boolean }) {
-
-  const memo = fullAnalysisData.memo?.draft_v1;
+export default function RiskAnalysis({ riskMetrics, conclusion, isRecalculating }: { riskMetrics: RiskMetrics, conclusion: Conclusion, isRecalculating: boolean }) {
 
   return (
     <div className="space-y-8">

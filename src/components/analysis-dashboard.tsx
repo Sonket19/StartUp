@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { AnalysisData, RiskMetrics, Conclusion } from '@/lib/types';
+import type { AnalysisData } from '@/lib/types';
 import CompanyOverview from './company-overview';
 import MarketAnalysis from './market-analysis';
 import BusinessModel from './business-model';
@@ -25,7 +25,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Badge } from './ui/badge';
-import { getRiskAssessmentSummary, RiskAssessmentSummaryInput } from '@/ai/flows/risk-assessment-summary';
+import { useToast } from '@/hooks/use-toast';
 
 type AnalysisDashboardProps = {
   analysisData: AnalysisData;
@@ -50,6 +50,9 @@ const NoDataComponent = () => (
 export default function AnalysisDashboard({ analysisData: initialAnalysisData }: AnalysisDashboardProps) {
   const [analysisData, setAnalysisData] = useState(initialAnalysisData);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
+  const { toast } = useToast();
+
   const [weights, setWeights] = useState<Weightages>({
     teamStrength: 20,
     marketOpportunity: 20,
@@ -67,44 +70,50 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
   const handleRecalculate = async () => {
     if (!analysisData.memo) return;
     setIsRecalculating(true);
-    const memo = analysisData.memo.draft_v1;
-    const input: RiskAssessmentSummaryInput = {
-      companyOverview: JSON.stringify(memo.company_overview),
-      marketAnalysis: JSON.stringify(memo.market_analysis),
-      businessModel: JSON.stringify(memo.business_model),
-      financials: JSON.stringify(memo.financials),
-      claimsAnalysis: JSON.stringify(memo.claims_analysis),
-      riskMetrics: JSON.stringify(memo.risk_metrics),
-      conclusion: JSON.stringify(memo.conclusion),
-      weights: {
-        teamStrength: weights.teamStrength / 100,
-        marketOpportunity: weights.marketOpportunity / 100,
-        traction: weights.traction / 100,
-        claimCredibility: weights.claimCredibility / 100,
-        financialHealth: weights.financialHealth / 100,
-      }
-    };
-
+    
     try {
-      const result = await getRiskAssessmentSummary(input);
-      setAnalysisData(prev => {
-        if (!prev.memo) return prev;
-        return {
-        ...prev,
-        memo: {
-          ...prev.memo,
-          draft_v1: {
-            ...prev.memo.draft_v1,
-            risk_metrics: {
-              ...prev.memo.draft_v1.risk_metrics,
-              composite_investment_safety_score: result.composite_investment_safety_score,
-              narrative_justification: result.narrative_justification,
-            }
-          }
-        }
-      }});
-    } catch (error) {
+      // 1. Call generate_memo endpoint
+      const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${analysisData.deal_id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          team_strength: weights.teamStrength,
+          market_opportunity: weights.marketOpportunity,
+          traction: weights.traction,
+          claim_credibility: weights.claimCredibility,
+          financial_health: weights.financialHealth
+        })
+      });
+
+      if (!generateMemoResponse.ok) {
+        throw new Error('Failed to generate the new memo summary.');
+      }
+      
+      const generateResult = await generateMemoResponse.json();
+
+      // 2. Fetch the updated deal data
+      const dealResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals/${generateResult.deal_id}`);
+      if (!dealResponse.ok) {
+        throw new Error('Failed to fetch the updated analysis data.');
+      }
+      const updatedAnalysisData = await dealResponse.json();
+      
+      // 3. Update state and close dialog
+      setAnalysisData(updatedAnalysisData);
+      setIsCustomizeDialogOpen(false);
+      
+      toast({
+        title: "Summary Regenerated",
+        description: "The investment summary has been updated with your new weightages.",
+      });
+
+    } catch (error: any) {
       console.error("Failed to recalculate score", error);
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: error.message || "An unexpected error occurred while regenerating the summary.",
+      });
     } finally {
       setIsRecalculating(false);
     }
@@ -158,9 +167,9 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
                 </div>
             </DialogContent>
         </Dialog>
-        <Dialog>
+        <Dialog open={isCustomizeDialogOpen} onOpenChange={setIsCustomizeDialogOpen}>
             <DialogTrigger asChild>
-              <Button><SlidersHorizontal /> Generate Summary</Button>
+              <Button disabled={!memo}><SlidersHorizontal /> Generate Summary</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[625px]">
               <DialogHeader>
@@ -189,12 +198,10 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
                 </div>
               </div>
               <DialogFooter>
-                <DialogClose asChild>
                   <Button onClick={handleRecalculate} disabled={totalWeight !== 100 || isRecalculating}>
                     {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldAlert className="mr-2 h-4 w-4" />}
                     {isRecalculating ? 'Recalculating...' : 'Generate Summary'}
                   </Button>
-                </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -221,7 +228,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           {memo ? <Financials data={memo.financials} claims={memo.claims_analysis}/> : <NoDataComponent />}
         </TabsContent>
         <TabsContent value="risks">
-          {memo ? <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} fullAnalysisData={analysisData} isRecalculating={isRecalculating} /> : <NoDataComponent />}
+          {memo ? <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} isRecalculating={isRecalculating} /> : <NoDataComponent />}
         </TabsContent>
         <TabsContent value="chatbot">
           {memo ? <Chatbot analysisData={analysisData} /> : <NoDataComponent />}
