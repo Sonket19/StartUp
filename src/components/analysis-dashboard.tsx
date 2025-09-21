@@ -128,22 +128,27 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
     }
   };
 
-  const handleDownloadSourceFile = async (fileType: 'pitch_deck' | 'video_pitch' | 'audio_pitch' | 'text_notes') => {
+    const handleDownloadSourceFile = async (fileType: 'pitch_deck' | 'video_pitch' | 'audio_pitch' | 'text_notes') => {
         setDownloadingFile(fileType);
         
         let endpoint = '';
+        let defaultFilename = '';
         switch (fileType) {
             case 'pitch_deck':
                 endpoint = `/download_pitch_deck/${startupId}`;
+                defaultFilename = `${startupId}-pitch-deck.pdf`;
                 break;
             case 'video_pitch':
                 endpoint = `/download_video_pitch/${startupId}`;
+                defaultFilename = `${startupId}-video-pitch.mp4`;
                 break;
             case 'audio_pitch':
                 endpoint = `/download_audio_pitch/${startupId}`;
+                defaultFilename = `${startupId}-audio-pitch.mp3`;
                 break;
             case 'text_notes':
                 endpoint = `/download_text_notes/${startupId}`;
+                defaultFilename = `${startupId}-text-notes.txt`;
                 break;
         }
 
@@ -151,12 +156,12 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${endpoint}`);
             
             if (!response.ok) {
-                throw new Error(`Failed to download ${fileType.replace('_', ' ')}.`);
+                throw new Error(`Failed to download ${fileType.replace(/_/g, ' ')}.`);
             }
 
             const blob = await response.blob();
             const contentDisposition = response.headers.get('content-disposition');
-            let filename = `${startupId}-${fileType}.unknown`;
+            let filename = defaultFilename;
             if (contentDisposition) {
                 const filenameMatch = contentDisposition.match(/filename="(.+)"/);
                 if (filenameMatch && filenameMatch.length > 1) {
@@ -222,9 +227,6 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
                             </Button>
                         </div>
                     )}
-                     {/* The following sections are commented out as the types don't include these properties.
-                         They can be uncommented if the 'raw_files' type is updated to include video, audio, or text URLs. */}
-                    {/*
                     {rawFiles.video_pitch_deck_url && (
                         <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
                             <div className="flex items-center gap-3">
@@ -258,7 +260,6 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
                             </Button>
                         </div>
                     )}
-                    */}
                 </div>
             </DialogContent>
         </Dialog>
