@@ -86,7 +86,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       console.log('Request Payload:', JSON.stringify(requestBody, null, 2));
 
       // 1. Call generate_memo endpoint
-      const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${analysisData.metadata.deal_id}`, {
+      const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${analysisData.deal_id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
@@ -246,4 +246,5 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
 
     
 
+    
     
