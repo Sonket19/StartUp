@@ -103,19 +103,21 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-3"><Target className="w-7 h-7 text-primary"/>Claim Analysis: {claims[0].claim}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center bg-secondary/50 p-4 rounded-lg">
-                <span className="font-semibold text-lg">Simulated Probability</span>
-                <span className="text-3xl font-bold font-headline text-accent">{claims[0].simulated_probability}</span>
-            </div>
-            <p className="text-sm"><span className="font-semibold">Result:</span> <Badge>{claims[0].result}</Badge></p>
-            <p className="text-sm text-muted-foreground"><span className="font-semibold">Analysis Method:</span> {claims[0].analysis_method}</p>
-          </CardContent>
-        </Card>
+        {claims.map((claim, index) => (
+          <Card key={index}>
+            <CardHeader>
+              <CardTitle className="font-headline text-xl flex items-center gap-3"><Target className="w-6 h-6 text-primary"/>Claim Analysis: {claim.claim}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center bg-secondary/50 p-4 rounded-lg">
+                  <span className="font-semibold text-lg">Simulated Probability</span>
+                  <span className="text-3xl font-bold font-headline text-accent">{claim.simulated_probability}</span>
+              </div>
+              <p className="text-sm"><span className="font-semibold">Result:</span> <Badge>{claim.result}</Badge></p>
+              <p className="text-sm text-muted-foreground"><span className="font-semibold">Analysis Method:</span> {claim.analysis_method}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
