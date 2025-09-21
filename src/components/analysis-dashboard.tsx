@@ -158,11 +158,12 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
             const contentDisposition = response.headers.get('content-disposition');
             let filename = `${startupId}-${fileType}.unknown`;
             if (contentDisposition) {
-                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-                if (filenameMatch && filenameMatch[1]) {
+                const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+                if (filenameMatch && filenameMatch.length > 1) {
                     filename = filenameMatch[1];
                 }
             }
+
 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -335,4 +336,6 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
   );
 
     
+    
+
     
