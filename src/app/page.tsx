@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import type { AnalysisData } from '@/lib/types';
 import {
@@ -30,13 +30,10 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
   DialogDescription
 } from '@/components/ui/dialog';
 import FileUpload from '@/components/file-upload';
-import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
@@ -46,29 +43,29 @@ export default function InvestorDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
-  const router = useRouter();
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchDeals = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch deals. Please try again later.');
-        }
-        const data = await response.json();
-        setStartups(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+  const fetchDeals = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch deals. Please try again later.');
       }
-    };
-
-    fetchDeals();
+      const data = await response.json();
+      setStartups(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchDeals();
+  }, [fetchDeals]);
   
   const handleDelete = async (startupId: string) => {
     const originalStartups = [...startups];
@@ -122,18 +119,13 @@ export default function InvestorDashboard() {
     }
   };
 
-  const handleGenerate = () => {
-    // This would ideally be a real navigation after a real analysis is created.
-    // For now, it just navigates to the first mock startup if available.
-    if(startups.length > 0){
-        router.push(`/startup/${startups[0].deal_id}`);
-    } else {
-        // Maybe refresh or wait. For now, we do nothing.
-    }
+  const handleUploadComplete = () => {
+    setIsUploadDialogOpen(false);
+    fetchDeals();
   }
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading && startups.length === 0) {
       return (
         <Card>
            <Table>
@@ -260,7 +252,7 @@ export default function InvestorDashboard() {
         <div className="text-center py-20 border-2 border-dashed rounded-lg">
             <h2 className="text-2xl font-headline font-semibold">No Startups Analyzed</h2>
             <p className="text-muted-foreground mt-2">You haven&apos;t analyzed any startups yet.</p>
-            <Dialog>
+            <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="mt-4">
                   <Upload className="mr-2 h-4 w-4" />
@@ -268,7 +260,7 @@ export default function InvestorDashboard() {
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-xl">
-                <FileUpload onGenerate={handleGenerate} />
+                <FileUpload onGenerate={handleUploadComplete} />
               </DialogContent>
             </Dialog>
         </div>
@@ -286,7 +278,7 @@ export default function InvestorDashboard() {
               <p className="text-muted-foreground">Your portfolio of analyzed startups.</p>
             </div>
             {startups.length > 0 && (
-              <Dialog>
+              <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <Upload className="mr-2 h-4 w-4" />
@@ -294,7 +286,7 @@ export default function InvestorDashboard() {
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-xl">
-                  <FileUpload onGenerate={handleGenerate} />
+                  <FileUpload onGenerate={handleUploadComplete} />
                 </DialogContent>
               </Dialog>
             )}
@@ -305,5 +297,3 @@ export default function InvestorDashboard() {
     </div>
   );
 }
-
-    
