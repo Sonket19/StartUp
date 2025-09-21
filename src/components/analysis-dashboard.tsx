@@ -39,10 +39,14 @@ type Weightages = {
     financialHealth: number;
 };
 
-const NoDataComponent = () => (
-    <div className="text-center py-20">
+const NoDataComponent = ({ onGenerateClick }: { onGenerateClick: () => void }) => (
+    <div className="text-center py-20 border-2 border-dashed rounded-lg">
         <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
         <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed. You can try generating a summary.</p>
+        <Button onClick={onGenerateClick} className="mt-4">
+            <SlidersHorizontal className="mr-2 h-4 w-4" />
+            Generate Summary
+        </Button>
     </div>
 );
 
@@ -219,26 +223,24 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           <TabsTrigger value="chatbot" className="h-12"><MessageCircle className="mr-2"/>Chatbot</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          {memo ? <CompanyOverview data={memo.company_overview} /> : <NoDataComponent />}
+          {memo ? <CompanyOverview data={memo.company_overview} /> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="market">
-          {memo ? <MarketAnalysis data={memo.market_analysis} /> : <NoDataComponent />}
+          {memo ? <MarketAnalysis data={memo.market_analysis} /> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="model">
-          {memo ? <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/> : <NoDataComponent />}
+          {memo ? <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="financials">
-          {memo ? <Financials data={memo.financials} claims={memo.claims_analysis}/> : <NoDataComponent />}
+          {memo ? <Financials data={memo.financials} claims={memo.claims_analysis}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="risks">
-          {memo ? <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} isRecalculating={isRecalculating} /> : <NoDataComponent />}
+          {memo ? <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} isRecalculating={isRecalculating} /> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="chatbot">
-          {memo ? <Chatbot analysisData={analysisData} /> : <NoDataComponent />}
+          {memo ? <Chatbot analysisData={analysisData} /> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-
-    
