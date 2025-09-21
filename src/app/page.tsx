@@ -39,6 +39,7 @@ import FileUpload from '@/components/file-upload';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export default function InvestorDashboard() {
   const [startups, setStartups] = useState<AnalysisData[]>([]);
@@ -46,6 +47,7 @@ export default function InvestorDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchDeals = async () => {
@@ -68,8 +70,28 @@ export default function InvestorDashboard() {
     fetchDeals();
   }, []);
   
-  const handleDelete = (startupId: string) => {
+  const handleDelete = async (startupId: string) => {
+    const originalStartups = [...startups];
     setStartups(currentStartups => currentStartups.filter(s => s.deal_id !== startupId));
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals/${startupId}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) {
+            throw new Error('Failed to delete the analysis.');
+        }
+        toast({
+            title: "Analysis Deleted",
+            description: "The startup analysis has been successfully deleted.",
+        });
+    } catch (error: any) {
+        setStartups(originalStartups);
+        toast({
+            variant: "destructive",
+            title: "Deletion Failed",
+            description: error.message || "An unexpected error occurred.",
+        });
+    }
   };
 
   const handleDownload = async (dealId: string, companyName: string) => {
@@ -90,6 +112,11 @@ export default function InvestorDashboard() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to download memo", error);
+      toast({
+        variant: "destructive",
+        title: "Download Failed",
+        description: "Could not download the investment memo.",
+      })
     } finally {
       setDownloading(null);
     }
@@ -192,7 +219,7 @@ export default function InvestorDashboard() {
                             onClick={() => handleDownload(startup.deal_id, startup.metadata.company_name)}
                           >
                             {downloading === startup.deal_id ? (
-                              <Loader2 className="animate-spin" />
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             ) : (
                               <Download />
                             )}
@@ -258,17 +285,19 @@ export default function InvestorDashboard() {
               <h1 className="text-4xl font-headline font-bold">Investor Dashboard</h1>
               <p className="text-muted-foreground">Your portfolio of analyzed startups.</p>
             </div>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Document
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-xl">
-                <FileUpload onGenerate={handleGenerate} />
-              </DialogContent>
-            </Dialog>
+            {startups.length > 0 && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Document
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-xl">
+                  <FileUpload onGenerate={handleGenerate} />
+                </DialogContent>
+              </Dialog>
+            )}
         </div>
         
         {renderContent()}
@@ -276,3 +305,5 @@ export default function InvestorDashboard() {
     </div>
   );
 }
+
+    
