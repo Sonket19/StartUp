@@ -86,7 +86,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       console.log('Request Payload:', JSON.stringify(requestBody, null, 2));
 
       // 1. Call generate_memo endpoint
-      const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${analysisData.deal_id}`, {
+      const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${analysisData.metadata.deal_id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody)
@@ -229,7 +229,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           {memo ? <MarketAnalysis data={memo.market_analysis} /> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="model">
-          {memo ? <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
+          {memo ? <BusinessModel data={memo.business_model} dealId={analysisData.metadata.deal_id}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="financials">
           {memo ? <Financials data={memo.financials} claims={memo.claims_analysis}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
@@ -243,5 +243,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       </Tabs>
     </div>
   );
+
+    
 
     
