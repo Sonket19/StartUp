@@ -39,6 +39,14 @@ type Weightages = {
     financialHealth: number;
 };
 
+const NoDataComponent = () => (
+    <div className="text-center py-20">
+        <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
+        <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed.</p>
+    </div>
+);
+
+
 export default function AnalysisDashboard({ analysisData: initialAnalysisData }: AnalysisDashboardProps) {
   const [analysisData, setAnalysisData] = useState(initialAnalysisData);
   const [isRecalculating, setIsRecalculating] = useState(false);
@@ -200,38 +208,25 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           <TabsTrigger value="risks" className="h-12"><ShieldAlert className="mr-2"/>Risks</TabsTrigger>
           <TabsTrigger value="chatbot" className="h-12"><MessageCircle className="mr-2"/>Chatbot</TabsTrigger>
         </TabsList>
-        {memo ? (
-          <>
-            <TabsContent value="overview">
-              <CompanyOverview data={memo.company_overview} />
-            </TabsContent>
-            <TabsContent value="market">
-              <MarketAnalysis data={memo.market_analysis} />
-            </TabsContent>
-            <TabsContent value="model">
-              <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/>
-            </TabsContent>
-            <TabsContent value="financials">
-              <Financials data={memo.financials} claims={memo.claims_analysis}/>
-            </TabsContent>
-            <TabsContent value="risks">
-              <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} fullAnalysisData={analysisData} isRecalculating={isRecalculating} />
-            </TabsContent>
-            <TabsContent value="chatbot">
-              <Chatbot analysisData={analysisData} />
-            </TabsContent>
-          </>
-        ) : (
-          <TabsContent value="overview">
-            <div className="text-center py-20">
-                <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
-                <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed.</p>
-            </div>
-          </TabsContent>
-        )}
+        <TabsContent value="overview">
+          {memo ? <CompanyOverview data={memo.company_overview} /> : <NoDataComponent />}
+        </TabsContent>
+        <TabsContent value="market">
+          {memo ? <MarketAnalysis data={memo.market_analysis} /> : <NoDataComponent />}
+        </TabsContent>
+        <TabsContent value="model">
+          {memo ? <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/> : <NoDataComponent />}
+        </TabsContent>
+        <TabsContent value="financials">
+          {memo ? <Financials data={memo.financials} claims={memo.claims_analysis}/> : <NoDataComponent />}
+        </TabsContent>
+        <TabsContent value="risks">
+          {memo ? <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} fullAnalysisData={analysisData} isRecalculating={isRecalculating} /> : <NoDataComponent />}
+        </TabsContent>
+        <TabsContent value="chatbot">
+          {memo ? <Chatbot analysisData={analysisData} /> : <NoDataComponent />}
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
-
-  
