@@ -1,3 +1,4 @@
+
 import type { MarketAnalysis as MarketAnalysisType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -22,7 +23,9 @@ export default function MarketAnalysis({ data }: { data: MarketAnalysisType }) {
             <p className="text-4xl font-bold font-headline text-primary">{data.industry_size_and_growth.serviceable_obtainable_market.value}</p>
             <div className="flex flex-wrap gap-2 items-center">
               <Badge variant="secondary">CAGR: {data.industry_size_and_growth.serviceable_obtainable_market.cagr}</Badge>
-              <Badge variant="outline">Projection: {data.industry_size_and_growth.serviceable_obtainable_market.projection}</Badge>
+              {data.industry_size_and_growth.serviceable_obtainable_market.projection && (
+                <Badge variant="outline">Projection: {data.industry_size_and_growth.serviceable_obtainable_market.projection}</Badge>
+              )}
             </div>
           </div>
         </CardContent>
@@ -33,7 +36,11 @@ export default function MarketAnalysis({ data }: { data: MarketAnalysisType }) {
           <CardTitle className="font-headline text-2xl flex items-center gap-3"><Target className="w-7 h-7 text-primary"/>Sub-segment Opportunities</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">{data.sub_segment_opportunities}</p>
+            <ul className="list-disc list-inside text-muted-foreground">
+                {data.sub_segment_opportunities.map((opp, i) => (
+                    <li key={i}>{opp}</li>
+                ))}
+            </ul>
         </CardContent>
       </Card>
 
@@ -54,10 +61,10 @@ export default function MarketAnalysis({ data }: { data: MarketAnalysisType }) {
               {data.competitor_details.map((competitor) => (
                 <TableRow key={competitor.name}>
                   <TableCell className="font-medium">{competitor.name}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{competitor.description}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{competitor.commentary}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{competitor.business_model}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{competitor.funding}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{competitor.margins_and_growth}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{competitor.margins}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

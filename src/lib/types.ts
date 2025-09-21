@@ -1,134 +1,122 @@
 
 export type Founder = {
   name: string;
-  role: string | null;
   education: string | null;
-  experience: string | null;
   previous_ventures: string | null;
+  professional_background: string | null;
 };
 
 export type CompanyOverview = {
   name: string;
   sector: string;
   founders: Founder[];
-  technology: {
-    stack: string;
-    facilities: string;
-  };
+  technology: string;
 };
 
 export type MarketValue = {
   value: string;
   cagr: string;
   source: string;
+  projection?: string;
+  name: string;
+};
+
+export type CompetitorDetail = {
+  name: string;
+  business_model: string;
+  funding: string;
+  margins: string;
+  commentary: string;
+  category: string;
 };
 
 export type MarketAnalysis = {
-  market_size: {
-    som: MarketValue;
-    tam: MarketValue;
+  industry_size_and_growth: {
+    total_addressable_market: MarketValue;
+    serviceable_obtainable_market: MarketValue;
+    commentary: string;
   };
-  latest_news: string;
-  competitor_analysis: {
-    name: string;
-    business_model: string;
-    funding: string;
-    margins: string;
-    growth_rate: string;
-  }[];
-  sub_segment_opportunities: string;
-  industry_overview: string;
-};
-
-export type PricingStrategy = {
-  type: string;
-  description: string;
+  recent_news: string;
+  competitor_details: CompetitorDetail[];
+  sub_segment_opportunities: string[];
 };
 
 export type BusinessModel = {
-  revenue_model: string;
+  revenue_streams: string;
   pricing: string;
+  scalability: string;
   unit_economics: {
     customer_lifetime_value_ltv: string;
     customer_acquisition_cost_cac: string;
-    average_contract_value_acv: string;
-    gross_margins: string;
   };
-  scalability: string;
 };
 
-export type FinancialMetrics = {
-  projected_revenue_fy26_27: string;
-  burn_rate_monthly: string;
-  runway_months: string;
-  projected_revenue_fy25_26: string;
-  mrr: string;
-  arr: string;
+export type FinancialProjection = {
+  revenue: string;
+  year: string;
 };
 
 export type Financials = {
   funding_history: string;
-  financial_metrics: FinancialMetrics;
+  projections: FinancialProjection[];
   valuation_rationale: string;
-  current_round: {
-    ask_amount_inr: string;
-    stage: string;
-    ask_amount_usd: string;
-    use_of_funds: {
-      product_development: string;
-      sales_and_marketing: string;
-      operational_costs: string;
-    };
+srr_mrr: {
+    current_booked_arr: string;
+    current_mrr: string;
+  };
+  burn_and_runway: {
+    funding_ask: string;
+    stated_runway: string;
+    implied_net_burn: string;
   };
 };
 
 export type Claim = {
   result: string;
   simulated_probability: string;
-  simulation_parameters: {
-    runs: string;
-    new_customer_acquisition?: string;
-    pilot_conversions?: string;
-    time_horizon_months: number;
+  simulation_assumptions: {
+    average_contract_value?: string;
+    base_revenue?: string;
+    engagement_conversion_rate?: string;
+    pilot_conversion_rate?: string;
+    runs?: string;
+    time_horizon_months?: number;
     initial_customers?: number;
     acv_distribution?: string;
     assumptions?: string;
   };
   analysis_method: string;
   claim: string;
-  rationale_for_method: string;
-}
-
-export type ClaimsAnalysis = {
-  claims: Claim[];
+  input_dataset_length?: string;
 };
+
+export type ClaimsAnalysis = Claim[];
 
 export type RiskMetrics = {
   narrative_justification: string;
-  composite_risk_score: {
-    value: string;
-    interpretation: string;
-  };
+  composite_risk_score: number;
+  score_interpretation: string;
 };
 
 export type Conclusion = {
-  risks: string[];
-  investment_thesis: string;
-  recommendation: string;
-  strengths: string[];
+  overall_attractiveness: string;
+};
+
+export type MemoV1 = {
+  claims_analysis: ClaimsAnalysis;
+  market_analysis: MarketAnalysis;
+  financials: Financials;
+  company_overview: CompanyOverview;
+  conclusion: Conclusion;
+  business_model: BusinessModel;
+  risk_metrics: RiskMetrics;
 };
 
 export type Memo = {
-  draft_v1: {
-    claims_analysis: ClaimsAnalysis;
-    market_analysis: MarketAnalysis;
-    financials: Financials;
-    company_overview: CompanyOverview;
-    conclusion: Conclusion;
-    business_model: BusinessModel;
-    risk_metrics: RiskMetrics;
-  }
-}
+  docx_url: string;
+  draft_v1: MemoV1;
+  generated_at: string;
+};
 
 export type Metadata = {
   created_at: string;
@@ -139,7 +127,14 @@ export type Metadata = {
   error: string | null;
   status: string;
   processed_at: string;
-}
+  weightage: {
+    claim_credibility: number;
+    financial_health: number;
+    market_opportunity: number;
+    team_strength: number;
+    traction: number;
+  };
+};
 
 export type AnalysisData = {
   memo: Memo;

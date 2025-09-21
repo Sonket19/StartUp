@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { BarChart2, Briefcase, Calendar, Target, HelpCircle, GitBranch, PiggyBank, Sparkles, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const MetricCard = ({ title, value, icon, tooltip }: { title: string, value: string, icon: React.ReactNode, tooltip?: string }) => (
+const MetricCard = ({ title, value, icon, tooltip }: { title: string, value?: string, icon: React.ReactNode, tooltip?: string }) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
@@ -30,7 +31,7 @@ const MetricCard = ({ title, value, icon, tooltip }: { title: string, value: str
       )}
     </CardHeader>
     <CardContent>
-      <div className="text-2xl font-bold font-headline">{value}</div>
+      <div className="text-2xl font-bold font-headline">{value || 'N/A'}</div>
     </CardContent>
   </Card>
 );
@@ -64,12 +65,10 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
       <div>
         <h2 className="font-headline text-2xl mb-4">Key Metrics</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <MetricCard title="ARR" value={data.key_metrics.arr} icon={<BarChart2 className="h-4 w-4 text-muted-foreground" />} />
-          <MetricCard title="MRR" value={data.key_metrics.mrr} icon={<Calendar className="h-4 w-4 text-muted-foreground" />} />
-          <MetricCard title="Est. Burn Rate" value={data.key_metrics.burn_rate_estimated} icon={<HelpCircle className="h-4 w-4 text-muted-foreground" />} tooltip="Estimated by dividing funding ask by runway" />
-          <MetricCard title="Runway" value={data.key_metrics.runway} icon={<GitBranch className="h-4 w-4 text-muted-foreground" />} />
-          <MetricCard title="Gross Margin" value={data.key_metrics.gross_margin} icon={<HelpCircle className="h-4 w-4 text-muted-foreground" />} tooltip="Assumed value, not specified in document" />
-          <MetricCard title="CAC / LTV" value={data.key_metrics.cac_ltv} icon={<HelpCircle className="h-4 w-4 text-muted-foreground" />} tooltip="Not specified, critical unknown" />
+          <MetricCard title="ARR" value={data.srr_mrr.current_booked_arr} icon={<BarChart2 className="h-4 w-4 text-muted-foreground" />} />
+          <MetricCard title="MRR" value={data.srr_mrr.current_mrr} icon={<Calendar className="h-4 w-4 text-muted-foreground" />} />
+          <MetricCard title="Est. Burn Rate" value={data.burn_and_runway.implied_net_burn} icon={<HelpCircle className="h-4 w-4 text-muted-foreground" />} tooltip="Estimated by dividing funding ask by runway" />
+          <MetricCard title="Runway" value={data.burn_and_runway.stated_runway} icon={<GitBranch className="h-4 w-4 text-muted-foreground" />} />
         </div>
       </div>
       
@@ -80,7 +79,7 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
         <CardContent className="space-y-4">
           <div className="space-y-1">
             <h4 className="font-semibold">Current Ask</h4>
-            <p className="text-xl font-bold font-headline text-primary">{data.funding_history.ask} <Badge variant="secondary">{data.funding_history.round}</Badge></p>
+            <p className="text-xl font-bold font-headline text-primary">{data.burn_and_runway.funding_ask}</p>
           </div>
           <div className="space-y-1">
             <h4 className="font-semibold">Valuation Rationale</h4>
@@ -88,7 +87,7 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
           </div>
           <div className="space-y-1">
             <h4 className="font-semibold">Previous Funding</h4>
-            <p className="text-sm text-muted-foreground">{data.funding_history.previous_funding}</p>
+            <p className="text-sm text-muted-foreground">{data.funding_history}</p>
           </div>
         </CardContent>
       </Card>
@@ -100,10 +99,10 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-            {Object.entries(data.financial_projections).map(([year, value]) => (
-              <li key={year} className="flex justify-between items-center p-2 rounded-md hover:bg-secondary/50">
-                <span className="font-medium">{year}</span>
-                <span className="font-bold text-lg font-headline text-primary">{value}</span>
+            {data.projections.map((projection) => (
+              <li key={projection.year} className="flex justify-between items-center p-2 rounded-md hover:bg-secondary/50">
+                <span className="font-medium">{projection.year}</span>
+                <span className="font-bold text-lg font-headline text-primary">{projection.revenue}</span>
               </li>
             ))}
             </ul>
@@ -112,15 +111,15 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
 
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-3"><Target className="w-7 h-7 text-primary"/>Claim Analysis: {claims.claim_1.claim}</CardTitle>
+            <CardTitle className="font-headline text-2xl flex items-center gap-3"><Target className="w-7 h-7 text-primary"/>Claim Analysis: {claims[0].claim}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center bg-secondary/50 p-4 rounded-lg">
                 <span className="font-semibold text-lg">Simulated Probability</span>
-                <span className="text-3xl font-bold font-headline text-accent">{claims.claim_1.simulated_probability}</span>
+                <span className="text-3xl font-bold font-headline text-accent">{claims[0].simulated_probability}</span>
             </div>
-            <p className="text-sm"><span className="font-semibold">Result:</span> <Badge>{claims.claim_1.result}</Badge></p>
-            <p className="text-sm text-muted-foreground"><span className="font-semibold">Analysis Method:</span> {claims.claim_1.analysis_method}</p>
+            <p className="text-sm"><span className="font-semibold">Result:</span> <Badge>{claims[0].result}</Badge></p>
+            <p className="text-sm text-muted-foreground"><span className="font-semibold">Analysis Method:</span> {claims[0].analysis_method}</p>
           </CardContent>
         </Card>
       </div>

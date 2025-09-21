@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -37,14 +38,7 @@ export default function BusinessModel({ data }: { data: BusinessModelType }) {
         </CardHeader>
         <CardContent>
           <h3 className="font-headline text-xl mb-4">Pricing Strategy</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {data.pricing_strategy.map(strategy => (
-              <div key={strategy.type} className="p-4 bg-secondary/50 rounded-lg">
-                <p className="font-semibold">{strategy.type}</p>
-                <p className="text-sm text-muted-foreground">{strategy.description}</p>
-              </div>
-            ))}
-          </div>
+          <p className="text-sm text-muted-foreground">{data.pricing}</p>
         </CardContent>
       </Card>
       

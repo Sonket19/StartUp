@@ -1,3 +1,4 @@
+
 import type { CompanyOverview as CompanyOverviewType } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,27 +41,33 @@ export default function CompanyOverview({ data }: { data: CompanyOverviewType })
                 </div>
               </CardHeader>
               <CardContent className="space-y-4 flex-1">
-                <div className="flex items-start gap-3">
-                  <GraduationCap className="w-5 h-5 mt-1 text-muted-foreground flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold">Education</h4>
-                    <p className="text-muted-foreground text-sm">{founder.education}</p>
+                {founder.education && (
+                  <div className="flex items-start gap-3">
+                    <GraduationCap className="w-5 h-5 mt-1 text-muted-foreground flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold">Education</h4>
+                      <p className="text-muted-foreground text-sm">{founder.education}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Briefcase className="w-5 h-5 mt-1 text-muted-foreground flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold">Professional Background</h4>
-                    <p className="text-muted-foreground text-sm">{founder.professional_background}</p>
+                )}
+                {founder.professional_background && (
+                  <div className="flex items-start gap-3">
+                    <Briefcase className="w-5 h-5 mt-1 text-muted-foreground flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold">Professional Background</h4>
+                      <p className="text-muted-foreground text-sm">{founder.professional_background}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Building2 className="w-5 h-5 mt-1 text-muted-foreground flex-shrink-0" />
-                  <div>
-                    <h4 className="font-semibold">Previous Ventures</h4>
-                    <p className="text-muted-foreground text-sm">{founder.previous_ventures}</p>
+                )}
+                {founder.previous_ventures && (
+                  <div className="flex items-start gap-3">
+                    <Building2 className="w-5 h-5 mt-1 text-muted-foreground flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold">Previous Ventures</h4>
+                      <p className="text-muted-foreground text-sm">{founder.previous_ventures}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           ))}

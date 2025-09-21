@@ -58,14 +58,15 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
 
   const handleRecalculate = async () => {
     setIsRecalculating(true);
+    const memo = analysisData.memo.draft_v1;
     const input: RiskAssessmentSummaryInput = {
-      companyOverview: JSON.stringify(analysisData.company_overview),
-      marketAnalysis: JSON.stringify(analysisData.market_analysis),
-      businessModel: JSON.stringify(analysisData.business_model),
-      financials: JSON.stringify(analysisData.financials),
-      claimsAnalysis: JSON.stringify(analysisData.claims_analysis),
-      riskMetrics: JSON.stringify(analysisData.risk_metrics),
-      conclusion: JSON.stringify(analysisData.conclusion),
+      companyOverview: JSON.stringify(memo.company_overview),
+      marketAnalysis: JSON.stringify(memo.market_analysis),
+      businessModel: JSON.stringify(memo.business_model),
+      financials: JSON.stringify(memo.financials),
+      claimsAnalysis: JSON.stringify(memo.claims_analysis),
+      riskMetrics: JSON.stringify(memo.risk_metrics),
+      conclusion: JSON.stringify(memo.conclusion),
       weights: {
         teamStrength: weights.teamStrength / 100,
         marketOpportunity: weights.marketOpportunity / 100,
@@ -79,10 +80,16 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       const result = await getRiskAssessmentSummary(input);
       setAnalysisData(prev => ({
         ...prev,
-        risk_metrics: {
-          ...prev.risk_metrics,
-          composite_investment_safety_score: result.composite_investment_safety_score,
-          narrative_justification: result.narrative_justification
+        memo: {
+          ...prev.memo,
+          draft_v1: {
+            ...prev.memo.draft_v1,
+            risk_metrics: {
+              ...prev.memo.draft_v1.risk_metrics,
+              composite_investment_safety_score: result.composite_investment_safety_score,
+              narrative_justification: result.narrative_justification,
+            }
+          }
         }
       }))
     } catch (error) {
@@ -91,6 +98,8 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       setIsRecalculating(false);
     }
   };
+
+  const memo = analysisData.memo.draft_v1;
 
   return (
     <div className="w-full animate-in fade-in-50 duration-500">
@@ -189,19 +198,19 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           <TabsTrigger value="chatbot" className="h-12"><MessageCircle className="mr-2"/>Chatbot</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <CompanyOverview data={analysisData.company_overview} />
+          <CompanyOverview data={memo.company_overview} />
         </TabsContent>
         <TabsContent value="market">
-          <MarketAnalysis data={analysisData.market_analysis} />
+          <MarketAnalysis data={memo.market_analysis} />
         </TabsContent>
         <TabsContent value="model">
-          <BusinessModel data={analysisData.business_model} />
+          <BusinessModel data={memo.business_model} />
         </TabsContent>
         <TabsContent value="financials">
-          <Financials data={analysisData.financials} claims={analysisData.claims_analysis}/>
+          <Financials data={memo.financials} claims={memo.claims_analysis}/>
         </TabsContent>
         <TabsContent value="risks">
-          <RiskAnalysis riskMetrics={analysisData.risk_metrics} conclusion={analysisData.conclusion} fullAnalysisData={analysisData} isRecalculating={isRecalculating} />
+          <RiskAnalysis riskMetrics={memo.risk_metrics} conclusion={memo.conclusion} fullAnalysisData={analysisData} isRecalculating={isRecalculating} />
         </TabsContent>
         <TabsContent value="chatbot">
           <Chatbot analysisData={analysisData} />

@@ -21,8 +21,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 
-const ScoreCircle = ({ score, isLoading }: { score: string; isLoading?: boolean }) => {
-    const numericScore = parseFloat(score);
+const ScoreCircle = ({ score, isLoading }: { score: string | number; isLoading?: boolean }) => {
+    const numericScore = typeof score === 'string' ? parseFloat(score) : score;
     const circumference = 2 * Math.PI * 45;
     const offset = circumference - (numericScore / 100) * circumference;
   
@@ -76,6 +76,8 @@ const ScoreCircle = ({ score, isLoading }: { score: string; isLoading?: boolean 
 
 export default function RiskAnalysis({ riskMetrics, conclusion, fullAnalysisData, isRecalculating }: { riskMetrics: RiskMetrics, conclusion: Conclusion, fullAnalysisData: AnalysisData, isRecalculating: boolean }) {
 
+  const memo = fullAnalysisData.memo?.draft_v1;
+
   return (
     <div className="space-y-8">
       <Card>
@@ -87,41 +89,24 @@ export default function RiskAnalysis({ riskMetrics, conclusion, fullAnalysisData
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row items-center gap-8">
           <div className="flex-shrink-0">
-            <ScoreCircle score={riskMetrics.composite_investment_safety_score} isLoading={isRecalculating} />
+            <ScoreCircle score={riskMetrics.composite_risk_score} isLoading={isRecalculating} />
           </div>
           <div className="space-y-4">
             <h3 className="font-headline text-xl">Narrative Justification</h3>
             <p className="text-muted-foreground">{riskMetrics.narrative_justification}</p>
+            <Badge>{riskMetrics.score_interpretation}</Badge>
           </div>
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader>
-          <CardTitle className="font-headline text-2xl flex items-center gap-3"><AlertTriangle className="w-7 h-7 text-destructive"/>Key Risks</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {conclusion.key_risks.map(riskItem => (
-            <div key={riskItem.risk} className="p-4 border rounded-lg">
-                <h4 className="font-semibold flex items-center gap-2"><Info className="w-5 h-5 text-muted-foreground" />{riskItem.risk}</h4>
-                <p className="text-sm text-muted-foreground mt-2 pl-7"><span className="font-medium">Mitigation:</span> {riskItem.mitigation}</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
           <CardTitle className="font-headline text-2xl flex items-center gap-3"><CheckCircle className="w-7 h-7 text-primary"/>Conclusion</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
             <div>
-                <h3 className="font-semibold">Summary of Opportunity</h3>
-                <p className="text-muted-foreground">{conclusion.summary_of_opportunity}</p>
-            </div>
-            <div>
-                <h3 className="font-semibold">Investment Recommendation</h3>
-                <p className="text-muted-foreground">{conclusion.investment_recommendation}</p>
+                <h3 className="font-semibold">Overall Attractiveness</h3>
+                <p className="text-muted-foreground">{conclusion.overall_attractiveness}</p>
             </div>
         </CardContent>
       </Card>
