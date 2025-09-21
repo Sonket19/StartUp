@@ -1,4 +1,4 @@
-# **App Name**: Startup Insights AI
+# **App Name**: Pitch Lens
 
 ## Core Features:
 

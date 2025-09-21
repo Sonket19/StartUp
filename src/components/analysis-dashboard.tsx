@@ -335,6 +335,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
       </Tabs>
     </div>
   );
+}
 
     
     
