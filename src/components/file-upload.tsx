@@ -86,18 +86,15 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
 
   const handleUploadClick = async () => {
     setError(null);
-    if (!canGenerate) {
-        setError('Please provide at least one data source.');
+    if (!pitchDeck) {
+        setError('Please select a pitch deck file to upload.');
         return;
     }
     
     setIsLoading(true);
 
     const formData = new FormData();
-    if (pitchDeck) {
-        formData.append('pitch_deck', pitchDeck);
-    }
-    // Note: Other files are not being sent as per the request to only handle pitch_deck for now.
+    formData.append('pitch_deck', pitchDeck);
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/upload`, {
@@ -110,10 +107,8 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
             throw new Error(errorData.detail || 'File upload failed');
         }
 
-        // Assuming the API returns a JSON response with an ID or some data for the next step.
         const result = await response.json();
         
-        // TODO: Use the result from the API, e.g., result.id to navigate to the analysis page
         console.log('Upload successful:', result);
 
         onGenerate();
@@ -192,7 +187,7 @@ export default function FileUpload({ onGenerate }: FileUploadProps) {
                 </Alert>
             )}
             
-          <Button size="lg" className="w-full font-bold" onClick={handleUploadClick} disabled={!canGenerate || isLoading}>
+          <Button size="lg" className="w-full font-bold" onClick={handleUploadClick} disabled={!pitchDeck || isLoading}>
             {isLoading ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
