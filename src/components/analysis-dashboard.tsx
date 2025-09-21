@@ -57,6 +57,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
   };
 
   const handleRecalculate = async () => {
+    if (!analysisData.memo) return;
     setIsRecalculating(true);
     const memo = analysisData.memo.draft_v1;
     const input: RiskAssessmentSummaryInput = {
@@ -78,7 +79,9 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
 
     try {
       const result = await getRiskAssessmentSummary(input);
-      setAnalysisData(prev => ({
+      setAnalysisData(prev => {
+        if (!prev.memo) return prev;
+        return {
         ...prev,
         memo: {
           ...prev.memo,
@@ -91,7 +94,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
             }
           }
         }
-      }))
+      }});
     } catch (error) {
       console.error("Failed to recalculate score", error);
     } finally {
@@ -99,7 +102,16 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
     }
   };
 
-  const memo = analysisData.memo.draft_v1;
+  const memo = analysisData.memo?.draft_v1;
+
+  if (!memo) {
+    return (
+        <div className="text-center py-20">
+            <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
+            <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed.</p>
+        </div>
+    );
+  }
 
   return (
     <div className="w-full animate-in fade-in-50 duration-500">
