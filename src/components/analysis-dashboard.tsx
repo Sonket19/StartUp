@@ -43,10 +43,6 @@ const NoDataComponent = ({ onGenerateClick }: { onGenerateClick: () => void }) =
     <div className="text-center py-20 border-2 border-dashed rounded-lg">
         <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
         <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed. You can try generating a summary.</p>
-        <Button onClick={onGenerateClick} className="mt-4">
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Generate Summary
-        </Button>
     </div>
 );
 
@@ -56,6 +52,8 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  console.log('analysisData:', analysisData);
 
   const [weights, setWeights] = useState<Weightages>({
     teamStrength: 20,
@@ -229,7 +227,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
           {memo ? <MarketAnalysis data={memo.market_analysis} /> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="model">
-          {memo ? <BusinessModel data={memo.business_model} dealId={analysisData.metadata.deal_id}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
+          {memo ? <BusinessModel data={memo.business_model} dealId={analysisData.deal_id}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
         </TabsContent>
         <TabsContent value="financials">
           {memo ? <Financials data={memo.financials} claims={memo.claims_analysis}/> : <NoDataComponent onGenerateClick={() => setIsCustomizeDialogOpen(true)} />}
@@ -243,8 +241,4 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       </Tabs>
     </div>
   );
-
-    
-
-    
-    
+}
