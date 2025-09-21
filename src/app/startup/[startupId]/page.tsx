@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -24,7 +25,7 @@ export default function StartupPage({ params }: { params: { startupId: string } 
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deal/${params.startupId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/deals/${params.startupId}`);
         if (!response.ok) {
           if(response.status === 404) {
             notFound();

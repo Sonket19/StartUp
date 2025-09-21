@@ -31,7 +31,6 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
-  DialogDescription
 } from '@/components/ui/dialog';
 import FileUpload from '@/components/file-upload';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
