@@ -113,7 +113,10 @@ export default function Financials({ data, claims }: { data: FinancialsType, cla
                   <span className="font-semibold text-lg">Simulated Probability</span>
                   <span className="text-3xl font-bold font-headline text-accent">{claim.simulated_probability}</span>
               </div>
-              <p className="text-sm"><span className="font-semibold">Result:</span> <Badge>{claim.result}</Badge></p>
+              <div className="space-y-1">
+                <h4 className="font-semibold">Result</h4>
+                <p className="text-sm text-muted-foreground">{claim.result}</p>
+              </div>
               <p className="text-sm text-muted-foreground"><span className="font-semibold">Analysis Method:</span> {claim.analysis_method}</p>
             </CardContent>
           </Card>
