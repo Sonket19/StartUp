@@ -44,6 +44,10 @@ const NoDataComponent = ({ onGenerateClick }: { onGenerateClick: () => void }) =
     <div className="text-center py-20 border-2 border-dashed rounded-lg">
         <h2 className="text-2xl font-headline font-semibold">Analysis data is not available.</h2>
         <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed. You can generate a summary.</p>
+        <Button onClick={onGenerateClick} className="mt-4">
+            <SlidersHorizontal className="mr-2 h-4 w-4" />
+            Generate Summary
+        </Button>
     </div>
 );
 
@@ -52,9 +56,8 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
   const [analysisData, setAnalysisData] = useState(initialAnalysisData);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isCustomizeDialogOpen, setIsCustomizeDialogOpen] = useState(false);
+  const [downloadingFile, setDownloadingFile] = useState<string | null>(null);
   const { toast } = useToast();
-
-  console.log('analysisData:', analysisData);
 
   const [weights, setWeights] = useState<Weightages>({
     teamStrength: 20,
@@ -81,8 +84,6 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
         claim_credibility: weights.claimCredibility,
         financial_health: weights.financialHealth
       };
-
-      console.log('Request Payload:', JSON.stringify(requestBody, null, 2));
 
       // 1. Call generate_memo endpoint
       const generateMemoResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/generate_memo/${startupId}`, {
@@ -125,7 +126,54 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
     }
   };
 
+  const handleDownloadSourceFile = async (fileType: 'pitch_deck' | 'video_pitch' | 'audio_pitch' | 'text_notes') => {
+        setDownloadingFile(fileType);
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/download_source/${startupId}?file_type=${fileType}`);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to download ${fileType.replace('_', ' ')}.`);
+            }
+
+            const blob = await response.blob();
+            const contentDisposition = response.headers.get('content-disposition');
+            let filename = `${startupId}-${fileType}.unknown`;
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1];
+                }
+            }
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            
+            toast({
+                title: 'Download Started',
+                description: `Your download for ${filename} has started.`,
+            });
+
+        } catch (error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Download Failed',
+                description: error.message || 'An unexpected error occurred.',
+            });
+        } finally {
+            setDownloadingFile(null);
+        }
+    };
+
+
   const memo = analysisData?.memo?.draft_v1;
+  const rawFiles = analysisData?.raw_files || {};
+
 
   return (
     <div className="w-full animate-in fade-in-50 duration-500">
@@ -142,34 +190,54 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
-                    <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                            <FileText className="w-6 h-6 text-muted-foreground" />
-                            <span className="font-medium">pitch_deck_v3.pdf</span>
+                    {rawFiles.pitch_deck_url && (
+                        <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <FileText className="w-6 h-6 text-muted-foreground" />
+                                <span className="font-medium">pitch_deck.pdf</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleDownloadSourceFile('pitch_deck')} disabled={downloadingFile === 'pitch_deck'}>
+                                {downloadingFile === 'pitch_deck' ? <Loader2 className="animate-spin" /> : 'Download'}
+                            </Button>
                         </div>
-                        <Button size="sm">Download</Button>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                            <Video className="w-6 h-6 text-muted-foreground" />
-                            <span className="font-medium">founder_interview.mp4</span>
+                    )}
+                     {/* The following sections are commented out as the types don't include these properties.
+                         They can be uncommented if the 'raw_files' type is updated to include video, audio, or text URLs. */}
+                    {/*
+                    {rawFiles.video_pitch_deck_url && (
+                        <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <Video className="w-6 h-6 text-muted-foreground" />
+                                <span className="font-medium">founder_interview.mp4</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleDownloadSourceFile('video_pitch')} disabled={downloadingFile === 'video_pitch'}>
+                               {downloadingFile === 'video_pitch' ? <Loader2 className="animate-spin" /> : 'Download'}
+                            </Button>
                         </div>
-                        <Button size="sm">Download</Button>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                            <Mic className="w-6 h-6 text-muted-foreground" />
-                            <span className="font-medium">demo_walkthrough.mp3</span>
+                    )}
+                    {rawFiles.audio_pitch_deck_url && (
+                        <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <Mic className="w-6 h-6 text-muted-foreground" />
+                                <span className="font-medium">demo_walkthrough.mp3</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleDownloadSourceFile('audio_pitch')} disabled={downloadingFile === 'audio_pitch'}>
+                                {downloadingFile === 'audio_pitch' ? <Loader2 className="animate-spin" /> : 'Download'}
+                            </Button>
                         </div>
-                        <Button size="sm">Download</Button>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
-                        <div className="flex items-center gap-3">
-                            <Type className="w-6 h-6 text-muted-foreground" />
-                            <span className="font-medium">additional_notes.txt</span>
+                    )}
+                    {rawFiles.text_pitch_deck_url && (
+                        <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <Type className="w-6 h-6 text-muted-foreground" />
+                                <span className="font-medium">additional_notes.txt</span>
+                            </div>
+                            <Button size="sm" onClick={() => handleDownloadSourceFile('text_notes')} disabled={downloadingFile === 'text_notes'}>
+                                {downloadingFile === 'text_notes' ? <Loader2 className="animate-spin" /> : 'Download'}
+                            </Button>
                         </div>
-                        <Button size="sm">Download</Button>
-                    </div>
+                    )}
+                    */}
                 </div>
             </DialogContent>
         </Dialog>
@@ -242,4 +310,5 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData, s
       </Tabs>
     </div>
   );
-}
+
+    
