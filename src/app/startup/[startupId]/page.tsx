@@ -9,7 +9,7 @@ import Header from '@/components/header';
 import { notFound } from 'next/navigation';
 
 export default function StartupPage({ params }: { params: { startupId: string } }) {
-  const { startupId } = params;
+  const { startupId } = use(params);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
