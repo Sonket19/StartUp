@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -140,7 +141,7 @@ export default function InvestorDashboard() {
             </TableHeader>
             <TableBody>
               {startups.map(startup => {
-                const memo = startup.memo.draft_v1;
+                const memo = startup.memo?.draft_v1;
                 return (
                   <TableRow key={startup.deal_id}>
                     <TableCell>
@@ -149,9 +150,13 @@ export default function InvestorDashboard() {
                         <div className="text-sm text-muted-foreground">{startup.metadata.sector}</div>
                       </Link>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">{memo.risk_metrics.composite_risk_score.value}</TableCell>
+                    <TableCell className="hidden sm:table-cell text-center font-semibold font-headline">
+                      {memo ? memo.risk_metrics.composite_risk_score.value : 'N/A'}
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <p className="text-sm text-muted-foreground">{memo.conclusion.recommendation}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {memo ? memo.conclusion.investment_recommendation : 'N/A'}
+                      </p>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -170,7 +175,7 @@ export default function InvestorDashboard() {
                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                  <AlertDialogDescription>
                                    This action cannot be undone. This will permanently delete the analysis for <span className="font-bold">{startup.metadata.company_name}</span>.
-                                 </AlertDialogDescription>
+                                 </Description>
                                </AlertDialogHeader>
                                <AlertDialogFooter>
                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
