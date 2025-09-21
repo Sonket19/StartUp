@@ -42,7 +42,7 @@ type Weightages = {
 const NoDataComponent = () => (
     <div className="text-center py-20">
         <h2 className="text-2xl font-headline font-semibold text-destructive">Analysis data is not available.</h2>
-        <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed.</p>
+        <p className="text-muted-foreground mt-2">The analysis for this startup might still be in progress or has failed. You can try generating a summary.</p>
     </div>
 );
 
@@ -68,7 +68,6 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
   };
 
   const handleRecalculate = async () => {
-    if (!analysisData.memo) return;
     setIsRecalculating(true);
     
     try {
@@ -103,7 +102,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
       setIsCustomizeDialogOpen(false);
       
       toast({
-        title: "Summary Regenerated",
+        title: "Summary Generated",
         description: "The investment summary has been updated with your new weightages.",
       });
 
@@ -169,7 +168,7 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
         </Dialog>
         <Dialog open={isCustomizeDialogOpen} onOpenChange={setIsCustomizeDialogOpen}>
             <DialogTrigger asChild>
-              <Button disabled={!memo}><SlidersHorizontal /> Generate Summary</Button>
+              <Button><SlidersHorizontal /> {memo ? 'Regenerate' : 'Generate'} Summary</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[625px]">
               <DialogHeader>
@@ -237,3 +236,5 @@ export default function AnalysisDashboard({ analysisData: initialAnalysisData }:
     </div>
   );
 }
+
+    
