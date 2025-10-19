@@ -8,8 +8,9 @@
  * - RiskAssessmentSummaryOutput - The return type for the getRiskAssessmentSummary function.
  */
 
-import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import {ai} from '@/ai/genkit';
+import {buildCompositeScoreString, computeDeterministicRiskSummary} from '@/lib/risk/deterministicRisk';
 
 const RiskAssessmentSummaryInputSchema = z.object({
   companyOverview: z
@@ -45,45 +46,6 @@ export async function getRiskAssessmentSummary(input: RiskAssessmentSummaryInput
   return riskAssessmentSummaryFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'riskAssessmentSummaryPrompt',
-  input: {schema: RiskAssessmentSummaryInputSchema},
-  output: {schema: RiskAssessmentSummaryOutputSchema},
-  prompt: `You are an expert risk assessment analyst.
-
-  Based on the provided information about the company, generate a risk assessment summary.
-  
-  {{#if weights}}
-  You MUST recalculate the 'composite_investment_safety_score' and 'narrative_justification' based on the new weights provided.
-  The original weights were: Team Strength (20%), Market Opportunity (20%), Traction (20%), Claim Credibility (25%), and Financial Health (15%).
-  The new weights are:
-  - Team Strength: {{{weights.teamStrength}}}
-  - Market Opportunity: {{{weights.marketOpportunity}}}
-  - Traction: {{{weights.traction}}}
-  - Claim Credibility: {{{weights.claimCredibility}}}
-  - Financial Health: {{{weights.financialHealth}}}
-  
-  Analyze the provided data and determine a score (0-100) for each of the five factors. Then, calculate the new weighted average to get the composite score.
-  The new narrative justification should reflect how the change in weights impacted the score.
-  For example, if the investor increased the weight on "Team Strength" and the team is very strong, the score should increase, and the justification should mention this.
-  Return the score as a percentage string (e.g., "75.2%").
-  {{else}}
-  You should calculate the composite investment safety score, narrative justification, and identified key risks.
-  The default weights are: Team Strength (20%), Market Opportunity (20%), Traction (20%), Claim Credibility (25%), and Financial Health (15%).
-  {{/if}}
-
-  Company Overview: {{{companyOverview}}}
-  Market Analysis: {{{marketAnalysis}}}
-  Business Model: {{{businessModel}}}
-  Financials: {{{financials}}}
-  Claims Analysis: {{{claimsAnalysis}}}
-  Risk Metrics: {{{riskMetrics}}}
-  Conclusion: {{{conclusion}}}
-
-  Provide a summary of the risk assessment, including the composite investment safety score and narrative justification.
-`,
-});
-
 const riskAssessmentSummaryFlow = ai.defineFlow(
   {
     name: 'riskAssessmentSummaryFlow',
@@ -91,7 +53,10 @@ const riskAssessmentSummaryFlow = ai.defineFlow(
     outputSchema: RiskAssessmentSummaryOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const {compositeScore, narrative} = computeDeterministicRiskSummary(input);
+    return {
+      composite_investment_safety_score: buildCompositeScoreString(compositeScore),
+      narrative_justification: narrative,
+    };
   }
 );
