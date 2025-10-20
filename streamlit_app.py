@@ -13,9 +13,23 @@ import streamlit as st
 st.set_page_config(page_title="Investor Dashboard", layout="wide")
 
 
+def _load_streamlit_secrets() -> Dict[str, Any]:
+    """Safely load Streamlit secrets if available.
+
+    Accessing ``st.secrets`` raises a ``FileNotFoundError`` when the runtime does not
+    have a ``secrets.toml`` file configured. Gracefully fall back to an empty mapping
+    so local development without secrets keeps working.
+    """
+
+    try:
+        return dict(st.secrets)  # type: ignore[arg-type]
+    except (FileNotFoundError, AttributeError):
+        return {}
+
+
 def _get_api_base_url() -> str:
     """Resolve the backend API base URL from env vars or Streamlit secrets."""
-    secret_config = getattr(st, "secrets", {}) or {}
+    secret_config = _load_streamlit_secrets()
     raw_url = os.getenv("API_BASE_URL") or secret_config.get("API_BASE_URL") or "http://localhost:8000"
     return raw_url.rstrip("/")
 
