@@ -23,6 +23,8 @@ This project exposes a Streamlit-based investor dashboard for reviewing AI-gener
    export API_BASE_URL="https://your-backend-url"
    ```
 
+   You can also adjust the backend URL from the Streamlit sidebar while the app is running if you need to switch hosts.
+
 3. Start the Streamlit application:
 
    ```bash

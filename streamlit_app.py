@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 
 import requests
 import streamlit as st
+from requests import exceptions as requests_exceptions
 
 
 st.set_page_config(page_title="Investor Dashboard", layout="wide")
@@ -37,6 +38,15 @@ def _get_api_base_url() -> str:
 API_BASE_URL = _get_api_base_url()
 
 
+def _sanitize_base_url(raw_url: str) -> str:
+    """Normalize and clean base URL values before use."""
+
+    cleaned = (raw_url or "").strip()
+    if not cleaned:
+        return API_BASE_URL
+    return cleaned.rstrip("/")
+
+
 def build_api_url(endpoint: str, base_url: Optional[str] = None) -> str:
     """Construct a full API URL for the given endpoint."""
     clean_endpoint = endpoint.lstrip("/")
@@ -50,7 +60,7 @@ class ApiClient:
     """Simple HTTP client for communicating with the backend API."""
 
     def __init__(self, base_url: str) -> None:
-        self.base_url = base_url
+        self.base_url = _sanitize_base_url(base_url)
 
     def _handle_response(self, response: requests.Response) -> Any:
         try:
@@ -65,33 +75,47 @@ class ApiClient:
             return response.json()
         return response.content
 
-    def get(self, endpoint: str, *, stream: bool = False) -> Any:
-        response = requests.get(
-            build_api_url(endpoint, base_url=self.base_url),
-            timeout=60,
-            stream=stream,
-        )
+    def _request(self, method: str, endpoint: str, *, timeout: int, **kwargs: Any) -> Any:
+        url = build_api_url(endpoint, base_url=self.base_url)
+        try:
+            response = requests.request(method, url, timeout=timeout, **kwargs)
+        except requests_exceptions.ConnectionError as exc:
+            raise RuntimeError(
+                "Could not connect to the backend API. Verify the configured base URL and make sure the service is running. "
+                f"Current base URL: {self.base_url}"
+            ) from exc
+        except requests_exceptions.Timeout as exc:
+            raise RuntimeError(
+                "The request to the backend API timed out. Please retry or check the service health."
+            ) from exc
+        except requests_exceptions.RequestException as exc:  # pragma: no cover - unexpected request errors
+            raise RuntimeError(f"Request to backend API failed: {exc}") from exc
+
         return self._handle_response(response)
 
-    def post(self, endpoint: str, *, json: Optional[Dict[str, Any]] = None, files: Optional[Dict[str, Any]] = None, data: Optional[Dict[str, Any]] = None) -> Any:
-        response = requests.post(
-            build_api_url(endpoint, base_url=self.base_url),
-            timeout=120,
-            json=json,
-            files=files,
-            data=data,
-        )
-        return self._handle_response(response)
+    def get(self, endpoint: str, *, stream: bool = False) -> Any:
+        return self._request("get", endpoint, timeout=60, stream=stream)
+
+    def post(
+        self,
+        endpoint: str,
+        *,
+        json: Optional[Dict[str, Any]] = None,
+        files: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+    ) -> Any:
+        return self._request("post", endpoint, timeout=120, json=json, files=files, data=data)
 
     def delete(self, endpoint: str) -> Any:
-        response = requests.delete(
-            build_api_url(endpoint, base_url=self.base_url),
-            timeout=60,
-        )
-        return self._handle_response(response)
+        return self._request("delete", endpoint, timeout=60)
 
 
-client = ApiClient(API_BASE_URL)
+def _get_active_base_url() -> str:
+    return _sanitize_base_url(st.session_state.get("api_base_url", API_BASE_URL))
+
+
+def _get_client() -> ApiClient:
+    return ApiClient(_get_active_base_url())
 
 
 def _trigger_full_refresh() -> None:
@@ -99,9 +123,40 @@ def _trigger_full_refresh() -> None:
     st.experimental_rerun()
 
 
+def _initialize_session_state() -> None:
+    if "api_base_url" not in st.session_state:
+        st.session_state["api_base_url"] = API_BASE_URL
+
+
+def _render_configuration_panel() -> None:
+    st.sidebar.header("Settings")
+    st.sidebar.caption(
+        "Update the backend API URL if you're running the service on a different host or port."
+    )
+
+    current_url = st.session_state.get("api_base_url", API_BASE_URL)
+    new_url = st.sidebar.text_input(
+        "Backend API URL",
+        value=current_url,
+        key="api_base_url_input",
+        help="Example: https://api.your-domain.com",
+    )
+
+    if st.sidebar.button("Apply API URL", key="apply_api_url"):
+        sanitized = _sanitize_base_url(new_url)
+        if sanitized != st.session_state.get("api_base_url"):
+            st.session_state["api_base_url"] = sanitized
+            st.sidebar.success("Backend URL updated.")
+            refresh_deals_cache()
+            st.experimental_rerun()
+        else:
+            st.sidebar.info("Backend URL unchanged.")
+
+
 @st.cache_data(show_spinner=False)
-def load_deals(version: int) -> List[Dict[str, Any]]:
+def load_deals(version: int, base_url: str) -> List[Dict[str, Any]]:
     """Fetch all startup analyses."""
+    client = ApiClient(base_url)
     return client.get("deals")
 
 
@@ -112,6 +167,7 @@ def refresh_deals_cache() -> None:
 
 def fetch_deal(startup_id: str) -> Dict[str, Any]:
     """Fetch a single startup analysis."""
+    client = _get_client()
     return client.get(f"deals/{startup_id}")
 
 
@@ -286,12 +342,15 @@ def _render_claims_analysis(memo: Dict[str, Any]) -> None:
 def _render_source_downloads(startup_id: str, analysis_data: Dict[str, Any]) -> None:
     st.subheader("Source Files")
     raw_files = analysis_data.get("raw_files") or {}
+    base_url = _get_active_base_url()
 
     download_links: List[str] = []
     if raw_files.get("pitch_deck_url"):
         download_links.append(f"- [Pitch Deck]({raw_files['pitch_deck_url']})")
     else:
-        download_links.append(f"- [Pitch Deck API]({build_api_url(f'download_pitch_deck/{startup_id}')})")
+        download_links.append(
+            f"- [Pitch Deck API]({build_api_url(f'download_pitch_deck/{startup_id}', base_url=base_url)})"
+        )
 
     # Provide fallback API links for optional sources.
     optional_sources = [
@@ -300,7 +359,9 @@ def _render_source_downloads(startup_id: str, analysis_data: Dict[str, Any]) -> 
         ("Text Notes", "download_text_notes"),
     ]
     for label, endpoint in optional_sources:
-        download_links.append(f"- [{label}]({build_api_url(f'{endpoint}/{startup_id}')})")
+        download_links.append(
+            f"- [{label}]({build_api_url(f'{endpoint}/{startup_id}', base_url=base_url)})"
+        )
 
     memo_docx = analysis_data.get("memo", {}).get("docx_url")
     if memo_docx:
@@ -310,6 +371,7 @@ def _render_source_downloads(startup_id: str, analysis_data: Dict[str, Any]) -> 
 
 
 def _handle_delete(startup_id: str) -> None:
+    client = _get_client()
     try:
         client.delete(f"deals/{startup_id}")
     except Exception as exc:  # noqa: BLE001 - surfacing API error to the user
@@ -321,6 +383,7 @@ def _handle_delete(startup_id: str) -> None:
 
 
 def _handle_generate(startup_id: str, payload: Dict[str, int]) -> Optional[Dict[str, Any]]:
+    client = _get_client()
     try:
         result = client.post(f"generate_memo/{startup_id}", json={
             "team_strength": payload["team_strength"],
@@ -343,6 +406,7 @@ def _handle_generate(startup_id: str, payload: Dict[str, int]) -> Optional[Dict[
 
 
 def _handle_upload(form_values: Dict[str, Any]) -> None:
+    client = _get_client()
     pitch: Optional[Any] = form_values.get("pitch_deck")
     video: Optional[Any] = form_values.get("video_pitch")
     audio: Optional[Any] = form_values.get("audio_pitch")
@@ -377,8 +441,14 @@ def _handle_upload(form_values: Dict[str, Any]) -> None:
 
 
 def render_dashboard() -> None:
+    _initialize_session_state()
+    _render_configuration_panel()
+
     st.title("Investor Dashboard")
     st.caption("Review and manage AI-generated startup analyses.")
+
+    active_base_url = _get_active_base_url()
+    st.caption(f"Backend API URL: {active_base_url}")
 
     with st.expander("Create New Analysis", expanded=False):
         with st.form("upload_form"):
@@ -400,7 +470,7 @@ def render_dashboard() -> None:
     version = st.session_state.get("deals_version", 0)
     try:
         with st.spinner("Loading analyses..."):
-            deals = load_deals(version)
+            deals = load_deals(version, active_base_url)
     except Exception as exc:  # noqa: BLE001
         st.error(f"Unable to load startup analyses: {exc}")
         deals = []
@@ -435,7 +505,9 @@ def render_dashboard() -> None:
                 st.experimental_rerun()
 
             if memo:
-                download_url = build_api_url(f"download_memo/{startup.get('deal_id')}")
+                download_url = build_api_url(
+                    f"download_memo/{startup.get('deal_id')}", base_url=active_base_url
+                )
                 action_column.markdown(f"[Download Memo]({download_url})", unsafe_allow_html=True)
             else:
                 action_column.markdown("_Memo not available yet_")
