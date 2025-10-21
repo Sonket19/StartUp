@@ -1,54 +1,19 @@
-# # Use Node.js LTS
-# FROM node:18-alpine
+FROM python:3.11-slim AS base
 
-# # Set working directory
-# WORKDIR /app
-
-# # Install dependencies
-# COPY package*.json ./
-# RUN npm install --production
-
-# # Copy all project files
-# COPY . .
-
-# # Build Next.js
-# RUN npm run build
-
-# # Expose port 8080 (Cloud Run expects this)
-# EXPOSE 8080
-
-# # Start Next.js
-# # CMD ["npm", "run", "start", "-p", "8080"]
-# # Use Cloud Run PORT environment variable
-# CMD ["sh", "-c", "npm run start -- -p ${PORT:-8080}"]
-
-
-
-# Install dependencies only when needed
-FROM node:18-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm install
 
-# Rebuild the source code only when needed
-FROM node:18-alpine AS builder
-WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
-COPY --from=deps /app/node_modules ./node_modules
 
-# Set environment variable for Next.js build
-ARG NEXT_PUBLIC_API_BASE_URL
-ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ARG API_BASE_URL=http://localhost:8000
+ENV API_BASE_URL=${API_BASE_URL} \
+    PORT=8080 \
+    STREAMLIT_SERVER_PORT=8080 \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0
 
-# Build Next.js app
-RUN npm run build
-
-# Production image
-FROM node:18-alpine AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-COPY --from=builder /app ./
-
-# Expose port
-EXPOSE 8080
-CMD ["npm", "start"]
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8080", "--server.address=0.0.0.0"]

@@ -10,6 +10,11 @@
 !.yarn/releases
 !.yarn/versions
 
+# python
+__pycache__/
+*.pyc
+.streamlit/
+
 # testing
 /coverage
 

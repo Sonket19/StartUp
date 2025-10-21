@@ -3,10 +3,9 @@ steps:
     args:
       [
         'build',
-        '--build-arg', 'NEXT_PUBLIC_API_BASE_URL=https://fastapi-app-390550640662.us-central1.run.app',
-        '--build-arg', 'GEMINI_API_KEY=AIzaSyCG_RaIGoBFlAMH89c_97LUpvVGOlbiO-w',
-        '-t', 'us-central1-docker.pkg.dev/hackathon-472304/frontend-repo/nextjs-frontend:latest',
+        '--build-arg', 'API_BASE_URL=https://fastapi-app-390550640662.us-central1.run.app',
+        '-t', 'us-central1-docker.pkg.dev/hackathon-472304/frontend-repo/streamlit-frontend:latest',
         '.'
       ]
 images:
-  - 'us-central1-docker.pkg.dev/hackathon-472304/frontend-repo/nextjs-frontend:latest'
+  - 'us-central1-docker.pkg.dev/hackathon-472304/frontend-repo/streamlit-frontend:latest'
